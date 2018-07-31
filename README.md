@@ -411,12 +411,6 @@ var myContractReturned = MyContract.new(param1, param2, {
        // so the returned "myContractReturned" object will also get the address set.
     }
   });
-
-// Deploy contract synchronously: The address will be added as soon as the contract is mined.
-// Additionally you can watch the transaction by using the "transactionId" property
-var myContractInstance = MyContract.new(param1, param2, {data: myContractCode, gas: 300000, from: mySenderAddress});
-myContractInstance.transactionId  // The id of the transaction, which created the contract
-myContractInstance.address // undefined at start, but will be auto-filled later
 ```
 
 ##### Example
