@@ -155,7 +155,10 @@ function loadContract(abi, contractAddress, web3in, web3http) {
 
   // Override call and sendTransaction to include full shard id
   web3contract.eth.call = (obj, blockId, callback) => {
-    const ret = web3in.qkc.call(Object.assign({}, obj, { to: contractAddress }), callback);
+    const ret = web3in.qkc.call(
+      Object.assign({}, obj, { to: contractAddress }),
+      callback,
+    );
     return ret;
   };
 
@@ -193,114 +196,115 @@ export default {
 
     const web3http = new Web3(new Web3.providers.HttpProvider(jrpcUrl));
 
-    // eslint-disable-next-line
-    web3in.qkc = {
-      getBalance(qkcAddress, callback) {
-        const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
-        const shard = getFullShardIdFromQkcAddress(qkcAddress);
-        return web3http.eth.getBalance(ethAddress, shard, callback);
-      },
+    Object.defineProperty(web3in, 'qkc', {
+      value: {
+        // web3in.qkc = {
+        getBalance(qkcAddress, callback) {
+          const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
+          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          return web3http.eth.getBalance(ethAddress, shard, callback);
+        },
 
-      getTransactionCount(qkcAddress, callback) {
-        const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
-        const shard = getFullShardIdFromQkcAddress(qkcAddress);
-        return web3http.eth.getTransactionCount(ethAddress, shard, callback);
-      },
+        getTransactionCount(qkcAddress, callback) {
+          const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
+          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          return web3http.eth.getTransactionCount(ethAddress, shard, callback);
+        },
 
-      call(obj, callback) {
-        const qkcAddress = obj.to;
-        const qkcObj = Object.assign({}, obj, {
-          to: getEthAddressFromQkcAddress(qkcAddress),
-        });
-        const shard = getFullShardIdFromQkcAddress(qkcAddress);
-        return web3http.eth.call(qkcObj, shard, callback);
-      },
-
-      async sendTransaction(obj, callback) {
-        const fromEthAddress = web3in.eth.accounts[0];
-        const qkcObj = Object.assign({}, obj);
-        if (obj.fromFullShardId === undefined) {
-          qkcObj.fromFullShardId = getFullShardIdFromEthAddress(fromEthAddress);
-        }
-        if (obj.toFullShardId === undefined) {
-          if (obj.to === undefined) {
-            // contract creation
-            qkcObj.toFullShardId = obj.fromFullShardId;
-          } else {
-            qkcObj.toFullShardId = getFullShardIdFromQkcAddress(obj.to);
-          }
-        }
-        if (obj.to !== undefined) {
-          qkcObj.to = getEthAddressFromQkcAddress(obj.to);
-        }
-
-        // FIXME: make this async
-        qkcObj.nonce = web3http.eth.getTransactionCount(
-          fromEthAddress,
-          obj.fromFullShardId,
-        );
-        qkcObj.networkId = '0x3';
-        qkcObj.version = '0x1';
-
-        const tx = new Transaction(qkcObj)();
-        // To sign with a key
-        // var key = "0x...";
-        // tx.sign(ethUtil.toBuffer(key));
-        // tx.version = 1;
-
-        try {
-          const sig = await metaMaskSignTyped(web3in, tx);
-          Object.assign(tx, decodeSignature(sig));
-        } catch (error) {
-          console.log(error); // eslint-disable-line
-          return;
-        }
-        const payload = `0x${tx.serialize().toString('hex')}`;
-        web3http.eth.sendRawTransaction(payload, callback);
-      },
-
-      getTransactionReceipt: web3http.eth.getTransactionReceipt,
-
-      getCode(qkcAddr) {
-        return web3http.eth.getCode(getEthAddressFromQkcAddress(qkcAddr));
-      },
-
-      contract(abi) {
-        const contractFactory = web3in.eth.contract(abi);
-        const originalFactory = web3in.eth.contract(abi);
-        contractFactory.at = addr => loadContract(abi, addr, web3in, web3http);
-        contractFactory.new = (...args) => {
-          const size = args.length;
-          const callback = args[size - 1];
-          const obj = args[size - 2];
-          const newArguments = [];
-          for (let i = 0; i < size - 1; i += 1) {
-            newArguments.push(args[i]);
-          }
-          return originalFactory.new(...newArguments, (error, contract) => {
-            const contractOverride = Object.assign({}, contract);
-            if (contract.address) {
-              // contract.address is ETH address
-              contractOverride.address += obj.toFullShardId.slice(2);
-            } else {
-              // The transactionHash returned from eth_sendRawTransaction is already a tx id
-              contractOverride.transactionId = contract.transactionHash;
-            }
-            callback(error, contractOverride);
+        call(obj, callback) {
+          const qkcAddress = obj.to;
+          const qkcObj = Object.assign({}, obj, {
+            to: getEthAddressFromQkcAddress(qkcAddress),
           });
-        };
-        contractFactory.new.getData = originalFactory.new.getData;
-        return contractFactory;
+          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          return web3http.eth.call(qkcObj, shard, callback);
+        },
+
+        async sendTransaction(obj, callback) {
+          const fromEthAddress = web3in.eth.accounts[0];
+          const qkcObj = Object.assign({}, obj);
+          if (obj.fromFullShardId === undefined) {
+            qkcObj.fromFullShardId = getFullShardIdFromEthAddress(
+              fromEthAddress,
+            );
+          }
+          if (obj.toFullShardId === undefined) {
+            if (obj.to === undefined) {
+              // contract creation
+              qkcObj.toFullShardId = qkcObj.fromFullShardId;
+            } else {
+              qkcObj.toFullShardId = getFullShardIdFromQkcAddress(obj.to);
+            }
+          }
+          if (obj.to !== undefined) {
+            qkcObj.to = getEthAddressFromQkcAddress(obj.to);
+          }
+
+          // FIXME: make this async
+          qkcObj.nonce = web3http.eth.getTransactionCount(
+            fromEthAddress,
+            qkcObj.fromFullShardId,
+          );
+          qkcObj.networkId = '0x3';
+          qkcObj.version = '0x1';
+
+          const tx = new Transaction(qkcObj);
+          // To sign with a key
+          // var key = "0x...";
+          // tx.sign(ethUtil.toBuffer(key));
+          // tx.version = 1;
+
+          try {
+            const sig = await metaMaskSignTyped(web3in, tx);
+            Object.assign(tx, decodeSignature(sig));
+          } catch (error) {
+            console.log(error); // eslint-disable-line
+            return;
+          }
+          const payload = `0x${tx.serialize().toString('hex')}`;
+          web3http.eth.sendRawTransaction(payload, callback);
+        },
+
+        getTransactionReceipt: web3http.eth.getTransactionReceipt,
+
+        getCode(qkcAddr) {
+          return web3http.eth.getCode(getEthAddressFromQkcAddress(qkcAddr));
+        },
+
+        contract(abi) {
+          const contractFactory = web3in.eth.contract(abi);
+          const originalFactory = web3in.eth.contract(abi);
+          contractFactory.at = addr => loadContract(abi, addr, web3in, web3http);
+          contractFactory.new = (...args) => {
+            const size = args.length;
+            const callback = args[size - 1];
+            const obj = args[size - 2];
+            const newArguments = [...args.slice(0, -1)];
+            return originalFactory.new(...newArguments, (err, contract) => {
+              if (!contract) {
+                callback(err, contract);
+              }
+              const contractOverride = Object.assign({}, contract);
+              if (contract.address) {
+                // contract.address is ETH address
+                contractOverride.address += obj.toFullShardId.replace(/^0x/, '');
+              } else {
+                // The transactionHash returned from eth_sendRawTransaction is already a tx id
+                contractOverride.transactionId = contract.transactionHash;
+              }
+              callback(err, contractOverride);
+            });
+          };
+          contractFactory.new.getData = originalFactory.new.getData;
+          return contractFactory;
+        },
+
       },
-    };
+    });
 
-    // Override eth_sendTransaction to support Contract.new
+    // Override to support `contract.new`
     web3in.eth.sendTransaction = web3in.qkc.sendTransaction; // eslint-disable-line
-
-    // Override eth_getTransactionReceipt to support Contract.new
     web3in.eth.getTransactionReceipt = web3in.qkc.getTransactionReceipt; // eslint-disable-line
-
-    // Override eth_getCode to support Contract.new
     web3in.eth.getCode = web3in.qkc.getCode; // eslint-disable-line
   },
 };
