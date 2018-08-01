@@ -4,7 +4,7 @@
 
 The library is built on top of [web3.js](https://github.com/ethereum/web3.js). Though QuarkChain runs [Ethereum](https://www.ethereum.org/) Virtual Machine (EVM) and supports Ethereum smart contracts, due to the shard id encoding in the address and change of transaction data structure in QuarkChain the existing web3 library cannot work with QuarkChain JSON RPC directly without modification to handle the differences properly.
 
-Instead of modifying the the web3 source code the quarkchain-web3.js library provides an interface (```QuarkChain.injectWeb3(web3)```) to inject QuarkChain features into web3 instances. QuarkChain functions will be available in web3.qkc after injection and they mirror the same interfaces as their counterparts in web3.eth with two notable differences.
+Instead of modifying the the web3 source code the quarkchain-web3.js library provides an interface (```QuarkChain.injectWeb3(web3, <JRPC URL>)```) to inject QuarkChain features into web3 instances. QuarkChain functions will be available in `web3.qkc` after injection and they mirror the same interfaces as their counterparts in `web3.eth` with two notable differences.
 
 1. The addresses in QuarkChain are 24 bytes (48 hex chars)
 2. The transaction object in QuarkChain optionally can have three extra properties than in Ethereum
@@ -15,6 +15,29 @@ Instead of modifying the the web3 source code the quarkchain-web3.js library pro
 The web3 instance passed into the injection function should manage user accounts and will be used to get account address (```web3.eth.accounts[0]```) and sign transactions (```eth_signTypedData```). The Ethereum provider of the web3 instance must support [eth_signTypedData](https://github.com/ethereum/EIPs/pull/712) which is implemented by [MetaMask](https://metamask.io). Follow this [doc](https://github.com/MetaMask/faq/blob/master/detecting_metamask.md) to integrate MetaMask.
 
 This library is still under development and contributions and suggestions are welcome!
+
+## Build and Use
+
+To use for browsers, after cloning, can use `webpack` to build the client version of the library:
+
+```bash
+$ npm install  # Recomment node version 8 and above.
+$ npm run build  # Calls `webpack`.
+$ less dist/quarkchain-web3.js  # Should be able to plug into browser directly
+```
+
+To use as a normal node module:
+
+```javascript
+import QuarkChain from 'quarkchain-web3';
+
+QuarkChain.injectWeb3(
+    web3,  // Existing web3 instance.
+    "http://localhost:38391",  // JRPC URL.
+);
+```
+
+
 
 ## API Reference
 
