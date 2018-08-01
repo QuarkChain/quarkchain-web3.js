@@ -21,7 +21,7 @@ This library is still under development and contributions and suggestions are we
 To use for browsers, after cloning, can use `webpack` to build the client version of the library:
 
 ```bash
-$ npm install  # Recomment node version 8 and above.
+$ npm install  # Recommend node version 8 and above.
 $ npm run build  # Calls `webpack`.
 $ less dist/quarkchain-web3.js  # Should be able to plug into browser directly
 ```
