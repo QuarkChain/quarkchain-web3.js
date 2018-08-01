@@ -21,7 +21,7 @@ This library is still under development and contributions and suggestions are we
 To use for browsers, after cloning, can use `webpack` to build the client version of the library:
 
 ```bash
-$ npm install  # Recommend node version 8 and above.
+$ npm install  # Recommend node version 8 and above. add --no-shrinkwrap to keep current package-lock.json
 $ npm run build  # Calls `webpack`.
 $ less dist/quarkchain-web3.js  # Should be able to plug into browser directly
 ```
@@ -282,7 +282,7 @@ Returns the receipt of a transaction by transaction id.
 ##### Parameters
 
 1. `String` - The transaction id.
-2. `Function` - (optional) If you pass a callback the HTTP request is made asynchronous. 
+2. `Function` - (optional) If you pass a callback the HTTP request is made asynchronous.
    See [this note](https://github.com/ethereum/wiki/wiki/JavaScript-API#using-callbacks) for details.
 
 ##### Returns
@@ -299,7 +299,7 @@ Returns the receipt of a transaction by transaction id.
 - `contractAddress `: `String` - 20 Bytes - The contract address created **without full shard id**, if the transaction was a contract creation, otherwise `null`.
     To build a QKC contract address, append the toFullShardId used in the contract creation transaction.
     Normally you should use web3.qkc.contract(abi).new() which returns the QKC address in the callback.
-- `status `:  `String` - '0x0' indicates transaction failure , '0x1' indicates transaction succeeded. 
+- `status `:  `String` - '0x0' indicates transaction failure , '0x1' indicates transaction succeeded.
 
 ##### Example
 
@@ -331,7 +331,7 @@ Executes a message call transaction, which is directly executed in the VM of the
 ##### Parameters
 
 1. `Object` - A transaction object see [web3.qkc.sendTransaction](#web3qkcsendtransaction), with the difference that for calls the `from` property is optional as well.
-2. `Function` - (optional) If you pass a callback the HTTP request is made asynchronous. 
+2. `Function` - (optional) If you pass a callback the HTTP request is made asynchronous.
    See [this note](https://github.com/ethereum/wiki/wiki/JavaScript-API#using-callbacks) for details.
 
 ##### Returns
@@ -342,7 +342,7 @@ Executes a message call transaction, which is directly executed in the VM of the
 
 ```js
 var result = web3.qkc.call({
-    to: "0xD08305d78C6DF48c312c46125B919A79B312739765D931d8", 
+    to: "0xD08305d78C6DF48c312c46125B919A79B312739765D931d8",
     data: "0xc6888fa10000000000000000000000000000000000000000000000000000000000000003"
 });
 console.log(result); // "0x0000000000000000000000000000000000000000000000000000000000000015"
@@ -510,4 +510,3 @@ myContractInstance.myStateChangingMethod('someParam1', 23, {value: 200, gas: 200
 ```
 
 ------
-
