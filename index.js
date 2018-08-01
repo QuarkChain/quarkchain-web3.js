@@ -25,6 +25,9 @@
 //     const ethAddr = web3.eth.accounts[0];
 //     const qkcAddr = QuarkChain.getQkcAddressFromEthAddress(ethAddr);
 //     web3.qkc.getBalance(qkcAddr).toString(10);
+//
+// Also for now this package needs `Web3` global variable from MetaMask, which means it can
+// only work in browser.
 
 import ethUtil from 'ethereumjs-util';
 
@@ -198,7 +201,6 @@ export default {
 
     Object.defineProperty(web3in, 'qkc', {
       value: {
-        // web3in.qkc = {
         getBalance(qkcAddress, callback) {
           const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
           const shard = getFullShardIdFromQkcAddress(qkcAddress);
