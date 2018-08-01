@@ -261,7 +261,9 @@ export default {
 
       getTransactionReceipt: web3http.eth.getTransactionReceipt,
 
-      getCode: web3http.eth.getCode,
+      getCode(qkcAddr) {
+        return web3http.eth.getCode(getEthAddressFromQkcAddress(qkcAddr));
+      },
 
       contract(abi) {
         const contractFactory = web3in.eth.contract(abi);
