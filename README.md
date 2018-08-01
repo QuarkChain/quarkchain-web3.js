@@ -23,7 +23,7 @@ To use for browsers, after cloning, can use `webpack` to build the client versio
 ```bash
 $ npm install  # Recommend node version 8 and above.
 $ npm run build  # Calls `webpack`.
-$ less dist/quarkchain-web3.js  # Should be able to plug into browser directly
+$ less dist/quarkchain-web3.js  # Should be able to plug into browser directly.
 ```
 
 
