@@ -267,8 +267,11 @@ export default {
 
         getTransactionReceipt: web3http.eth.getTransactionReceipt,
 
-        getCode(qkcAddr) {
-          return web3http.eth.getCode(getEthAddressFromQkcAddress(qkcAddr));
+        getCode(addr) {
+          if (addr.length === 42) {
+            return web3http.eth.getCode(addr);
+          }
+          return web3http.eth.getCode(getEthAddressFromQkcAddress(addr));
         },
 
         contract(abi) {

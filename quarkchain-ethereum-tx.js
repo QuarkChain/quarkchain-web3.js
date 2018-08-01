@@ -92,25 +92,6 @@ class Transaction {
         default: new Buffer([]),
       },
       {
-        name: 'v',
-        allowZero: true,
-        default: new Buffer([0x1c]),
-      },
-      {
-        name: 'r',
-        length: 32,
-        allowZero: true,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 's',
-        length: 32,
-        allowZero: true,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
         name: 'fromFullShardId',
         length: 4,
       },
@@ -127,6 +108,25 @@ class Transaction {
       {
         name: 'version',
         length: 32,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'v',
+        allowZero: true,
+        default: new Buffer([0x1c]),
+      },
+      {
+        name: 'r',
+        length: 32,
+        allowZero: true,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 's',
+        length: 32,
+        allowZero: true,
         allowLess: true,
         default: new Buffer([]),
       },
