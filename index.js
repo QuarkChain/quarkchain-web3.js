@@ -246,13 +246,17 @@ export default {
             qkcObj.fromFullShardId,
           );
           qkcObj.networkId = '0x3';
+          // qkcObj.version is part of transaction sent to QuarkChain Network but not part of signature
+          // it determines the signature version:
+          //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
+          //    '0x1' typed encoding matching MetaMask initial implementation of EIP-712
           qkcObj.version = '0x1';
 
           const tx = new Transaction(qkcObj);
           // To sign with a key
           // var key = "0x...";
           // tx.sign(ethUtil.toBuffer(key));
-          // tx.version = 1;
+          // tx.version = '0x0';
 
           try {
             const sig = await metaMaskSignTyped(web3in, tx);
