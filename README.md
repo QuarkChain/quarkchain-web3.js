@@ -26,18 +26,6 @@ $ npm run build  # Calls `webpack`.
 $ less dist/quarkchain-web3.js  # Should be able to plug into browser directly
 ```
 
-To use as a normal node module:
-
-```javascript
-import QuarkChain from 'quarkchain-web3';
-
-QuarkChain.injectWeb3(
-    web3,  // Existing web3 instance.
-    "http://localhost:38391",  // JRPC URL.
-);
-```
-
-
 
 ## API Reference
 
