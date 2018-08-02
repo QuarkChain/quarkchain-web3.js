@@ -255,11 +255,14 @@ export default {
           qkcObj.version = '0x1';
 
           const tx = new Transaction(qkcObj);
-          // To sign with a key
-          // var key = "0x...";
-          // tx.sign(ethUtil.toBuffer(key));
-          // tx.version = '0x0';
 
+          /* To sign with a key
+          var key = "0x...";
+          tx.version = '0x0';
+          tx.gasLimit = '0x...';   // need to be larger than intrinsic gas
+          tx.gasPrice = '0x...';
+          tx.sign(ethUtil.toBuffer(key));
+          */
           try {
             const sig = await metaMaskSignTyped(web3in, tx);
             Object.assign(tx, decodeSignature(sig));
@@ -268,7 +271,7 @@ export default {
             return;
           }
           const payload = `0x${tx.serialize().toString('hex')}`;
-          web3http.eth.sendRawTransaction(payload, callback);
+          return web3http.eth.sendRawTransaction(payload, callback);
         },
 
         getTransactionReceipt: web3http.eth.getTransactionReceipt,

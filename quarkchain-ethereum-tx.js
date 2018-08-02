@@ -195,7 +195,7 @@ class Transaction {
       items = this.raw;
       this.raw = raw;
     } else {
-      items = this.raw.slice(0, 6);
+      items = this.raw.slice(0, 9); // include fields up to networkId in QuarkChain
     }
 
     // create hash
