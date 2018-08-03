@@ -255,7 +255,7 @@ export default {
             rawTx.fromFullShardId,
           );
           rawTx.networkId = '0x3';
-          // qkcObj.version is part of transaction sent to QuarkChain Network but not part of
+          // rawTx.version is part of transaction sent to QuarkChain Network but not part of
           // signature it determines the signature version:
           //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
           //    '0x1' typed encoding matching MetaMask initial implementation of EIP-712
