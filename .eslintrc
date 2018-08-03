@@ -3,13 +3,14 @@
     "mocha": true,
     "node": true
   },
-  "extends": [
-    "airbnb-base"
-  ],
+  "extends": ["airbnb-base"],
   "globals": {
     "Web3": true
   },
   "parserOptions": {
     "ecmaVersion": 8
+  },
+  "rules": {
+    "prefer-destructuring": ["error", { "object": true, "array": false }]
   }
 }

@@ -228,10 +228,23 @@ export default {
           return web3http.eth.call(rawTx, shard, callback);
         },
 
+        setPrivateKey(privateKey) {
+          if (privateKey.length !== 66) {
+            throw new Error('Invalid key');
+          }
+          this.key = privateKey;
+          this.address = `0x${ethUtil.privateToAddress(ethUtil.toBuffer(privateKey)).toString('hex')}`;
+        },
+
+        unsetPrivateKey() {
+          this.key = null;
+          this.address = null;
+        },
+
         async sendTransaction(obj, callback) {
           let fromEthAddress;
-          if (web3in.scriptAccount) {
-            fromEthAddress = web3in.scriptAccount;
+          if (this.address) {
+            fromEthAddress = this.address;
           } else {
             fromEthAddress = web3in.eth.accounts[0];
           }
@@ -267,11 +280,10 @@ export default {
 
           const tx = new Transaction(rawTx);
 
-          if (web3in.scriptAccount) {
+          if (this.key) {
             // sign with a key
-            var key = web3in.scriptKey;
             tx.version = '0x0';
-            tx.sign(ethUtil.toBuffer(key));
+            tx.sign(ethUtil.toBuffer(this.key));
           } else {
             const sig = await metaMaskSignTyped(web3in, tx);
             Object.assign(tx, decodeSignature(sig));
