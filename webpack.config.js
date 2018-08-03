@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   mode: 'development',
@@ -16,11 +17,10 @@ module.exports = {
         loader: 'babel-loader',
         query: {
           presets: ['env', 'stage-0'],
-          plugins: [
-            ['add-module-exports'],
-          ],
+          plugins: [['add-module-exports']],
         },
       },
     ],
   },
+  plugins: [new webpack.IgnorePlugin(/web3/)],
 };
