@@ -62,6 +62,7 @@ QuarkChain.injectWeb3(web3, QKC_JRPC_URL)
     - [call](#web3qkccall)
     - [contract](#web3qkccontract)
     - [contract methods](#contract-methods)
+  - [signing without MetaMask](#sign-with-private-key)
 
 #### QuarkChain.getFullShardIdFromEthAddress
 
@@ -525,6 +526,14 @@ var result = myContractInstance.myConstantMethod('myParam');
 console.log(result);  // '0x25434534534'
 
 myContractInstance.myStateChangingMethod('someParam1', 23, {value: 200, gas: 2000}, function(err, result){ ... });
+```
+
+#### Sign With Private Key
+You can skip MetaMask by providing the address and key (this is a bit hacky but works)
+```js
+web3.scriptAccount = "0x..."; // 20-byte address, same length as web3.eth.accounts[0]
+web3.scriptKey = "0x...";
+// Then continue with sendTransaction or contract methods (write), remember to set gasLimit and gasPrice correctly
 ```
 
 ------
