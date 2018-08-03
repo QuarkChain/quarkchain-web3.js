@@ -14,10 +14,8 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['env', 'stage-0'],
-          plugins: [['add-module-exports']],
+        use: {
+          loader: 'babel-loader',
         },
       },
     ],
