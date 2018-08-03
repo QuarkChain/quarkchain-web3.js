@@ -229,7 +229,12 @@ export default {
         },
 
         async sendTransaction(obj, callback) {
-          const fromEthAddress = web3in.eth.accounts[0];
+          let fromEthAddress;
+          if (web3in.scriptAccount) {
+            fromEthAddress = web3in.scriptAccount;
+          } else {
+            fromEthAddress = web3in.eth.accounts[0];
+          }
           const rawTx = Object.assign({}, obj);
           if (obj.fromFullShardId === undefined) {
             rawTx.fromFullShardId = getFullShardIdFromEthAddress(
@@ -262,19 +267,14 @@ export default {
 
           const tx = new Transaction(rawTx);
 
-          /* To sign with a key
-          var key = "0x...";
-          tx.version = '0x0';
-          tx.gasLimit = '0x...';   // need to be larger than intrinsic gas
-          tx.gasPrice = '0x...';
-          tx.sign(ethUtil.toBuffer(key));
-          */
-          try {
+          if (web3in.scriptAccount) {
+            // sign with a key
+            var key = web3in.scriptKey;
+            tx.version = '0x0';
+            tx.sign(ethUtil.toBuffer(key));
+          } else {
             const sig = await metaMaskSignTyped(web3in, tx);
             Object.assign(tx, decodeSignature(sig));
-          } catch (error) {
-            console.log(error); // eslint-disable-line
-            return;
           }
           const payload = `0x${tx.serialize().toString('hex')}`;
           return web3http.eth.sendRawTransaction(payload, callback);
