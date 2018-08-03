@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "build:es5": "babel index.js --source-root ./ -d ./dist"
+    "build:es5": "babel index.js quarkchain-ethereum-tx.js -d ./dist",
+    "run:es5": "babel index.js quarkchain-ethereum-tx.js -d ./dist && ndb dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -33,11 +34,13 @@
     "eslint": "^5.2.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.13.0",
+    "ndb": "^1.0.18",
     "webpack": "^4.16.3",
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
     "ethereum-common": "0.0.18",
-    "ethereumjs-util": "^5.2.0"
+    "ethereumjs-util": "^5.2.0",
+    "web3": "^1.0.0-beta.35"
   }
 }

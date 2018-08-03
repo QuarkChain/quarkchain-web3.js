@@ -26,6 +26,24 @@ $ npm run build  # Calls `webpack`.
 $ less dist/quarkchain-web3.js  # Should be able to plug into browser directly.
 ```
 
+Most likely you won't be able to use this library in Node since not many web3 providers have implemented `eth_signTypedData` which is needed by us. But in case you really want to try (also we recommend node >= 10 since [ndb](https://github.com/GoogleChromeLabs/ndb) is awesome):
+
+```bash
+# ES5, with babel.
+$ npm run build:es5
+# Build and start interacting using ndb.
+$ npm run run:es5
+```
+
+Then in the console:
+
+```javascript
+const QuarkChain = require('./dist/index.js');
+const Web3 = require('web3')
+const web3 = new Web3();
+
+QuarkChain.injectWeb3(web3, QKC_JRPC_URL)
+```
 
 ## API Reference
 

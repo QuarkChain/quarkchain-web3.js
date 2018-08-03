@@ -33,6 +33,13 @@ import ethUtil from 'ethereumjs-util';
 
 import Transaction from './quarkchain-ethereum-tx';
 
+let Web3;
+if (typeof window === 'undefined') {
+  Web3 = require("web3"); // eslint-disable-line
+} else {
+  Web3 = window.Web3; // eslint-disable-line
+}
+
 function assert(condition, msg) {
   if (!condition) {
     throw msg;
@@ -215,46 +222,46 @@ export default {
 
         call(obj, callback) {
           const qkcAddress = obj.to;
-          const qkcObj = Object.assign({}, obj, {
+          const rawTx = Object.assign({}, obj, {
             to: getEthAddressFromQkcAddress(qkcAddress),
           });
           const shard = getFullShardIdFromQkcAddress(qkcAddress);
-          return web3http.eth.call(qkcObj, shard, callback);
+          return web3http.eth.call(rawTx, shard, callback);
         },
 
         async sendTransaction(obj, callback) {
           const fromEthAddress = web3in.eth.accounts[0];
-          const qkcObj = Object.assign({}, obj);
+          const rawTx = Object.assign({}, obj);
           if (obj.fromFullShardId === undefined) {
-            qkcObj.fromFullShardId = getFullShardIdFromEthAddress(
+            rawTx.fromFullShardId = getFullShardIdFromEthAddress(
               fromEthAddress,
             );
           }
           if (obj.toFullShardId === undefined) {
             if (obj.to === undefined) {
               // contract creation
-              qkcObj.toFullShardId = qkcObj.fromFullShardId;
+              rawTx.toFullShardId = rawTx.fromFullShardId;
             } else {
-              qkcObj.toFullShardId = getFullShardIdFromQkcAddress(obj.to);
+              rawTx.toFullShardId = getFullShardIdFromQkcAddress(obj.to);
             }
           }
           if (obj.to !== undefined) {
-            qkcObj.to = getEthAddressFromQkcAddress(obj.to);
+            rawTx.to = getEthAddressFromQkcAddress(obj.to);
           }
 
           // FIXME: make this async
-          qkcObj.nonce = web3http.eth.getTransactionCount(
+          rawTx.nonce = web3http.eth.getTransactionCount(
             fromEthAddress,
-            qkcObj.fromFullShardId,
+            rawTx.fromFullShardId,
           );
-          qkcObj.networkId = '0x3';
-          // qkcObj.version is part of transaction sent to QuarkChain Network but not part of signature
-          // it determines the signature version:
+          rawTx.networkId = '0x3';
+          // qkcObj.version is part of transaction sent to QuarkChain Network but not part of
+          // signature it determines the signature version:
           //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
           //    '0x1' typed encoding matching MetaMask initial implementation of EIP-712
-          qkcObj.version = '0x1';
+          rawTx.version = '0x1';
 
-          const tx = new Transaction(qkcObj);
+          const tx = new Transaction(rawTx);
 
           /* To sign with a key
           var key = "0x...";
@@ -299,7 +306,10 @@ export default {
               const contractOverride = Object.assign({}, contract);
               if (contract.address) {
                 // contract.address is ETH address
-                contractOverride.address += obj.toFullShardId.replace(/^0x/, '');
+                contractOverride.address += obj.toFullShardId.replace(
+                  /^0x/,
+                  '',
+                );
               } else {
                 // The transactionHash returned from eth_sendRawTransaction is already a tx id
                 contractOverride.transactionId = contract.transactionHash;
@@ -310,7 +320,6 @@ export default {
           contractFactory.new.getData = originalFactory.new.getData;
           return contractFactory;
         },
-
       },
     });
 
