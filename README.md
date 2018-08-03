@@ -30,9 +30,9 @@ Most likely you won't be able to use this library in Node since not many web3 pr
 
 ```bash
 # ES5, with babel.
-$ npm run build:es5
+$ npm run build:node
 # Build and start interacting using ndb.
-$ npm run run:es5
+$ npm run run:node
 ```
 
 Then in the console:

@@ -203,7 +203,6 @@ export default {
     // Args:
     //     web3in: web3 instance
     //     jrpcUrl: QuarkChain JSON RPC endpoint (e.g., http://localhost:38391)
-
     const web3http = new Web3(new Web3.providers.HttpProvider(jrpcUrl));
 
     Object.defineProperty(web3in, 'qkc', {
