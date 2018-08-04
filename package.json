@@ -11,7 +11,7 @@
     "build": "webpack",
     "build:dist": "babel index.js quarkchain-ethereum-tx.js -d ./dist",
     "run:dist": "babel index.js quarkchain-ethereum-tx.js -d ./dist && ndb dist/index.js",
-    "prepublish": "npm run build:dist"
+    "prepublishOnly": "npm run build:dist"
   },
   "repository": {
     "type": "git",
