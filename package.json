@@ -2,12 +2,16 @@
   "name": "quarkchain-web3",
   "version": "0.1.1",
   "description": "QuarkChain wrapper over Ethereum web3",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "build:node": "babel index.js quarkchain-ethereum-tx.js -d ./dist",
-    "run:node": "babel index.js quarkchain-ethereum-tx.js -d ./dist && ndb dist/index.js"
+    "build:dist": "babel index.js quarkchain-ethereum-tx.js -d ./dist",
+    "run:dist": "babel index.js quarkchain-ethereum-tx.js -d ./dist && ndb dist/index.js",
+    "prepublish": "npm run build:dist"
   },
   "repository": {
     "type": "git",
