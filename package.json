@@ -1,6 +1,6 @@
 {
   "name": "quarkchain-web3",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "QuarkChain wrapper over Ethereum web3",
   "main": "dist/index.js",
   "files": [
