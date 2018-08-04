@@ -18,31 +18,38 @@ This library is still under development and contributions and suggestions are we
 
 ## Build and Use
 
+### Browser
+
 To use for browsers, after cloning, can use `webpack` to build the client version of the library:
 
 ```bash
-$ npm install  # Recommend node version 8 and above. add --no-shrinkwrap to keep current package-lock.json
+$ npm install  # Recommend node version 8 and above. Preferably v10.
 $ npm run build  # Calls `webpack`.
 $ less dist/quarkchain-web3.js  # Should be able to plug into browser directly.
 ```
 
-Most likely you won't be able to use this library in Node since not many web3 providers have implemented `eth_signTypedData` which is needed by us. But in case you really want to try (also we recommend node >= 10 since [ndb](https://github.com/GoogleChromeLabs/ndb) is awesome):
+Check out `examples/browser` for how to use the library in the browser environment (which also links to the pre-built library file in CDN). Make sure you have MetaMask installed.
+
+### Node
+
+Since there aren't many web3 providers that have implemented `eth_signTypedData` (provided by MetaMask), we added `web3.qkc.setPrivateKey` API so clients will be able to manage keys and bypass signing typed data. To develop / interact with the library in node environment:
 
 ```bash
-# ES5, with babel.
-$ npm run build:node
-# Build and start interacting using ndb.
-$ npm run run:node
+# Transpile.
+$ npm run build:dist
+# Build and start interacting using ndb. Prefer node 10 for running ndb.
+$ npm run run:dist
 ```
 
-Then in the console:
+To use it in a npm package, take a look at `examples/node` as a toy project:
 
 ```javascript
-const QuarkChain = require('./dist/index.js');
-const Web3 = require('web3')
-const web3 = new Web3();
+import QuarkChain from 'quarkchain-web3';
+import Web3 from 'web3';
 
-QuarkChain.injectWeb3(web3, QKC_JRPC_URL)
+const web3 = new Web3();
+QuarkChain.injectWeb3(web3, QKC_JRPC_URL);
+web3.qkc.setPrivateKey(PRIVATE_KEY);
 ```
 
 ## API Reference
