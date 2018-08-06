@@ -540,9 +540,11 @@ You can skip MetaMask by providing the private key (a bit hacky but works) after
 ```js
 // Note the private key is a 32-byte hex string.
 web3.qkc.setPrivateKey('0x...');
-// Or unset and go back to MetaMask.
-web3.qkc.unsetPrivateKey();
 // Then continue with sendTransaction or contract methods (write), remember to set gasLimit and gasPrice correctly
+
+// Unset and go back to MetaMask.
+web3.qkc.unsetPrivateKey();
+
 ```
 
 ------
