@@ -294,11 +294,10 @@ export default {
 
         getTransactionReceipt: web3http.eth.getTransactionReceipt,
 
-        getCode(addr) {
-          if (addr.length === 42) {
-            return web3http.eth.getCode(addr);
-          }
-          return web3http.eth.getCode(getEthAddressFromQkcAddress(addr));
+        getCode(qkcAddress, callback) {
+          const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
+          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          return web3http.eth.getCode(ethAddress, shard, callback);
         },
 
         contract(abi) {
@@ -308,24 +307,16 @@ export default {
           contractFactory.new = (...args) => {
             const size = args.length;
             const callback = args[size - 1];
-            const obj = args[size - 2];
             const newArguments = [...args.slice(0, -1)];
             return originalFactory.new(...newArguments, (err, contract) => {
               if (!contract) {
                 callback(err, contract);
               }
-              const contractOverride = Object.assign({}, contract);
-              if (contract.address) {
-                // contract.address is ETH address
-                contractOverride.address += obj.toFullShardId.replace(
-                  /^0x/,
-                  '',
-                );
-              } else {
+              if (!contract.address) {
                 // The transactionHash returned from eth_sendRawTransaction is already a tx id
-                contractOverride.transactionId = contract.transactionHash;
+                contract.transactionId = contract.transactionHash; // eslint-disable-line
               }
-              callback(err, contractOverride);
+              callback(err, contract);
             });
           };
           contractFactory.new.getData = originalFactory.new.getData;
