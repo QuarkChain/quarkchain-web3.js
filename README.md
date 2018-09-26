@@ -1,6 +1,6 @@
 # quarkchain-web3.js
 
-[QuarkChain](https://quarkchain.io) client library provides the interfaces for DApps to interact with QuarkChain network.
+QuarkChain client library provides the interfaces for DApps to interact with QuarkChain network.
 
 The library is built on top of [web3.js](https://github.com/ethereum/web3.js). Though QuarkChain runs [Ethereum](https://www.ethereum.org/) Virtual Machine (EVM) and supports Ethereum smart contracts, due to the shard id encoding in the address and change of transaction data structure in QuarkChain the existing web3 library cannot work with QuarkChain JSON RPC directly without modification to handle the differences properly.
 
@@ -14,7 +14,7 @@ Instead of modifying the the web3 source code the quarkchain-web3.js library pro
 
 The web3 instance passed into the injection function should manage user accounts and will be used to get account address (```web3.eth.accounts[0]```) and sign transactions (```eth_signTypedData```). The Ethereum provider of the web3 instance must support [eth_signTypedData](https://github.com/ethereum/EIPs/pull/712) which is implemented by [MetaMask](https://metamask.io). Follow this [doc](https://github.com/MetaMask/faq/blob/master/detecting_metamask.md) to integrate MetaMask.
 
-This library is still under development and contributions and suggestions are welcome!
+**Check out the [Developer Guide](https://developers.quarkchain.io/#basic-concepts) to understand more basic concepts in QuarkChain.**
 
 ## Build and Use
 
