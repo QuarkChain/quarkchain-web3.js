@@ -92,16 +92,28 @@ class Transaction {
         default: new Buffer([]),
       },
       {
-        name: 'fromFullShardId',
-        length: 4,
-      },
-      {
-        name: 'toFullShardId',
-        length: 4,
-      },
-      {
         name: 'networkId',
         length: 32,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'fromFullShardKey',
+        length: 4,
+      },
+      {
+        name: 'toFullShardKey',
+        length: 4,
+      },
+      {
+        name: 'gasTokenId',
+        length: 8,
+        allowLess: true,
+        default: new Buffer([]),
+      },
+      {
+        name: 'transferTokenId',
+        length: 8,
         allowLess: true,
         default: new Buffer([]),
       },

@@ -31,7 +31,7 @@
       return;
     }
 
-    QuarkChain.injectWeb3(web3, "http://jrpc.testnet.quarkchain.io:38391");
+    QuarkChain.injectWeb3(web3, "http://jrpc.devnet.quarkchain.io:38391");
   })();
 
   async function sendTx() {
@@ -39,14 +39,23 @@
     const ethAddr = web3.eth.accounts[0];
     const qkcAddr = QuarkChain.getQkcAddressFromEthAddress(ethAddr);
 
+    const mainnetNetworkId = "0x1";
+    const devnetNetworkId = "0xff";
+
     const formEle = document.getElementById("sendTxForm");
     const rawTx = {
       gas: `0x${(30000).toString(16)}`,
-      gasPrice: "0x00",
+      // Minimum gas price: 10gwei
+      gasPrice: "0x2540be400",
       data: "0x",
-      // Update according to the form.
+      // Will be updated according to the form
       to: "",
       value: "",
+      networkId: devnetNetworkId,
+      fromFullShardKey: "0x00050001",
+      toFullShardKey: "0x00050001",
+      transferTokenId: "0x8bb0",
+      gasTokenId: "0x8bb0",
     };
     for (let i = 0; i < formEle.length; i += 1) {
       const element = formEle.elements[i];

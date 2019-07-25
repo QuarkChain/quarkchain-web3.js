@@ -11,8 +11,8 @@
 //     sendTransaction:
 //     {
 //       to: $QKC_ADDRESS,
-//       fromFullShardId (optional): $NUMBER,
-//       toFullShardId (optional): $NUMBER,
+//       fromFullShardKey: $NUMBER,
+//       toFullShardKey: $NUMBER,
 //       ...
 //     }, nonce is fetched from network
 //     getTransactionReceipt: $TX_ID
@@ -104,20 +104,31 @@ function getTypedTx(tx) {
       value: `0x${tx.data.toString('hex')}`,
     },
     {
-      type: 'uint32',
-      name: 'fromFullShardId',
-      value: `0x${tx.fromFullShardId.toString('hex')}`,
-    },
-    {
-      type: 'uint32',
-      name: 'toFullShardId',
-      value: `0x${tx.toFullShardId.toString('hex')}`,
-    },
-    {
       type: 'uint256',
       name: 'networkId',
       value: `0x${tx.networkId.toString('hex')}`,
     },
+    {
+      type: 'uint32',
+      name: 'fromFullShardKey',
+      value: `0x${tx.fromFullShardKey.toString('hex')}`,
+    },
+    {
+      type: 'uint32',
+      name: 'toFullShardKey',
+      value: `0x${tx.toFullShardKey.toString('hex')}`,
+    },
+    {
+      type: 'uint64',
+      name: 'gasTokenId',
+      value: `0x${tx.gasTokenId.toString('hex')}`
+    },
+    {
+      type: 'uint64',
+      name: 'transferTokenId',
+      value: `0x${tx.transferTokenId.toString('hex')}`
+    },
+
     {
       type: 'string',
       name: 'qkcDomain',
@@ -198,8 +209,6 @@ export default {
     // It should have a provider implementing RPC eth_signTypedData (https://github.com/ethereum/EIPs/pull/712)
     // Normally you should just pass in a web3 instance with provider from MetaMask.
     //
-    // FIXME: networkId is hard coded 0x3 for testnet
-    //
     // Args:
     //     web3in: web3 instance
     //     jrpcUrl: QuarkChain JSON RPC endpoint (e.g., http://localhost:38391)
@@ -248,20 +257,11 @@ export default {
           } else {
             fromEthAddress = web3in.eth.accounts[0];
           }
+          if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
+            throw new Error("`fromFullShardKey` and `toFullShardKey` are required");
+          }
+
           const rawTx = Object.assign({}, obj);
-          if (obj.fromFullShardId === undefined) {
-            rawTx.fromFullShardId = getFullShardIdFromEthAddress(
-              fromEthAddress,
-            );
-          }
-          if (obj.toFullShardId === undefined) {
-            if (obj.to === undefined) {
-              // contract creation
-              rawTx.toFullShardId = rawTx.fromFullShardId;
-            } else {
-              rawTx.toFullShardId = getFullShardIdFromQkcAddress(obj.to);
-            }
-          }
           if (obj.to !== undefined) {
             rawTx.to = getEthAddressFromQkcAddress(obj.to);
           }
@@ -269,9 +269,12 @@ export default {
           // FIXME: make this async
           rawTx.nonce = web3http.eth.getTransactionCount(
             fromEthAddress,
-            rawTx.fromFullShardId,
+            rawTx.fromFullShardKey,
           );
-          rawTx.networkId = '0x3';
+          if (!rawTx.networkId) {
+            // default network is devnet
+            rawTx.networkId = '0xff';
+          }
           // rawTx.version is part of transaction sent to QuarkChain Network but not part of
           // signature it determines the signature version:
           //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
