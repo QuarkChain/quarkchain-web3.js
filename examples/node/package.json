@@ -9,10 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "quarkchain-web3": "^0.2.0"
+    "quarkchain-web3": "^1.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0"
+    "babel-preset-env": "^1.7.0",
+    "ndb": "^1.1.4"
   }
 }

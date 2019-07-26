@@ -199,15 +199,9 @@ class Transaction {
     let items;
     if (includeSignature) {
       items = this.raw;
-    } else if (this._chainId > 0) {
-      const raw = this.raw.slice();
-      this.v = this._chainId;
-      this.r = 0;
-      this.s = 0;
-      items = this.raw;
-      this.raw = raw;
     } else {
-      items = this.raw.slice(0, 9); // include fields up to networkId in QuarkChain
+      // Excludes v, r, s and version.
+      items = this.raw.slice(0, 11);
     }
 
     // create hash
@@ -259,9 +253,6 @@ class Transaction {
 
     try {
       let v = ethUtil.bufferToInt(this.v);
-      if (this._chainId > 0) {
-        v -= this._chainId * 2 + 8;
-      }
       this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s);
     } catch (e) {
       return false;
@@ -277,9 +268,6 @@ class Transaction {
   sign(privateKey) {
     const msgHash = this.hash(false);
     const sig = ethUtil.ecsign(msgHash, privateKey);
-    if (this._chainId > 0) {
-      sig.v += this._chainId * 2 + 8;
-    }
     Object.assign(this, sig);
   }
 
