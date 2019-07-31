@@ -8,8 +8,8 @@ const BN = ethUtil.BN;
 
 // secp256k1n/2
 const N_DIV_2 = new BN(
-  '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
-  16,
+    '7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
+    16,
 );
 
 /**
@@ -50,284 +50,387 @@ const N_DIV_2 = new BN(
  * */
 
 class Transaction {
-  constructor(data) {
-    data = data || {};
-    // Define Properties
-    const fields = [
-      {
-        name: 'nonce',
-        length: 32,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'gasPrice',
-        length: 32,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'gasLimit',
-        alias: 'gas',
-        length: 32,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'to',
-        allowZero: true,
-        length: 20,
-        default: new Buffer([]),
-      },
-      {
-        name: 'value',
-        length: 32,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'data',
-        alias: 'input',
-        allowZero: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'networkId',
-        length: 32,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'fromFullShardKey',
-        length: 4,
-      },
-      {
-        name: 'toFullShardKey',
-        length: 4,
-      },
-      {
-        name: 'gasTokenId',
-        length: 8,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'transferTokenId',
-        length: 8,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'version',
-        length: 32,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 'v',
-        allowZero: true,
-        default: new Buffer([0x1c]),
-      },
-      {
-        name: 'r',
-        length: 32,
-        allowZero: true,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 's',
-        length: 32,
-        allowZero: true,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-    ];
+    constructor(data) {
+        data = data || {};
+        // Define Properties
+        const fields = [
+            {
+                name: 'nonce',
+                length: 32,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'gasPrice',
+                length: 32,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'gasLimit',
+                alias: 'gas',
+                length: 32,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'to',
+                allowZero: true,
+                length: 20,
+                default: new Buffer([]),
+            },
+            {
+                name: 'value',
+                length: 32,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'data',
+                alias: 'input',
+                allowZero: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'networkId',
+                length: 32,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'fromFullShardKey',
+                length: 4,
+            },
+            {
+                name: 'toFullShardKey',
+                length: 4,
+            },
+            {
+                name: 'gasTokenId',
+                length: 8,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'transferTokenId',
+                length: 8,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'version',
+                length: 32,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 'v',
+                allowZero: true,
+                default: new Buffer([0x1c]),
+            },
+            {
+                name: 'r',
+                length: 32,
+                allowZero: true,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+            {
+                name: 's',
+                length: 32,
+                allowZero: true,
+                allowLess: true,
+                default: new Buffer([]),
+            },
+        ];
+
+        /**
+         * Returns the rlp encoding of the transaction
+         * @method serialize
+         * @return {Buffer}
+         * @memberof Transaction
+         * @name serialize
+         */
+        // attached serialize
+        ethUtil.defineProperties(this, fields, data);
+
+        /**
+         * @property {Buffer} from (read only) sender address of this transaction, mathematically derived from other parameters.
+         * @name from
+         * @memberof Transaction
+         */
+        Object.defineProperty(this, 'from', {
+            enumerable: true,
+            configurable: true,
+            get: this.getSenderAddress.bind(this),
+        });
+
+        // calculate chainId from signature
+        const sigV = ethUtil.bufferToInt(this.v);
+        let chainId = Math.floor((sigV - 35) / 2);
+        if (chainId < 0) chainId = 0;
+
+        // set chainId
+        this._chainId = chainId || data.chainId || 0;
+        this._homestead = true;
+    }
 
     /**
-     * Returns the rlp encoding of the transaction
-     * @method serialize
+     * If the tx's `to` is to the creation address
+     * @return {Boolean}
+     */
+    toCreationAddress() {
+        return this.to.toString('hex') === '';
+    }
+
+    /**
+     * Computes a sha3-256 hash of the serialized tx
+     * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
      * @return {Buffer}
-     * @memberof Transaction
-     * @name serialize
      */
-    // attached serialize
-    ethUtil.defineProperties(this, fields, data);
+    hash(includeSignature) {
+        if (includeSignature === undefined) includeSignature = true;
+
+        // EIP155 spec:
+        // when computing the hash of a transaction for purposes of signing or recovering,
+        // instead of hashing only the first six elements (ie. nonce, gasprice, startgas, to, value, data),
+        // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0
+
+        let items;
+        if (includeSignature) {
+            items = this.raw;
+            return this.txEncode(items);
+        } else {
+            // Excludes v, r, s and version.
+            items = this.raw.slice(0, 11);
+        }
+
+        // create hash
+        return ethUtil.rlphash(items);
+    }
+
+    txEncode(a) {
+        var rlpresult = this.rlpEncode(a);
+        var len = rlpresult.length;
+        var buf = new Buffer(5 + len);
+        for (var i = len + 4; i >= 0; i--) {
+            if (i < 5) {
+                buf[i] = len % 256;
+                len = Math.floor(len / 256);
+            } else {
+                buf[i] = rlpresult[i - 5];
+            }
+        }
+        buf[0] = 1;
+        return ethUtil.sha3(buf);
+    }
+
+    // rlp.encode
+    rlpEncode(input) {
+
+        function intToHex(i) {
+            var hex = i.toString(16)
+            if (hex.length % 2) {
+                hex = '0' + hex
+            }
+            return hex
+        }
+
+        function encodeLength(len, offset) {
+            if (len < 56) {
+                return new Buffer([len + offset])
+            } else {
+                var hexLength = intToHex(len)
+                var lLength = hexLength.length / 2
+                var firstByte = intToHex(offset + 55 + lLength)
+                return new Buffer(firstByte + hexLength, 'hex')
+            }
+        }
+
+        function padToEven(a) {
+            if (a.length % 2) a = '0' + a
+            return a
+        }
+
+        function intToBuffer(i) {
+            var hex = intToHex(i)
+            return new Buffer(hex, 'hex')
+        }
+
+        function isHexPrefixed(str) {
+            return str.slice(0, 2) === '0x'
+        }
+
+        function stripHexPrefix(str) {
+            if (typeof str !== 'string') {
+                return str
+            }
+            return isHexPrefixed(str) ? str.slice(2) : str
+        }
+
+        function toBuffer(v) {
+            if (!Buffer.isBuffer(v)) {
+                if (typeof v === 'string') {
+                    if (isHexPrefixed(v)) {
+                        v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
+                    } else {
+                        v = new Buffer(v)
+                    }
+                } else if (typeof v === 'number') {
+                    if (!v) {
+                        v = new Buffer([])
+                    } else {
+                        v = intToBuffer(v)
+                    }
+                } else if (v === null || v === undefined) {
+                    v = new Buffer([])
+                } else if (v.toArray) {
+                    // converts a BN to a Buffer
+                    v = new Buffer(v.toArray())
+                } else {
+                    throw new Error('invalid type')
+                }
+            }
+            return v
+        }
+
+        if (input instanceof Array) {
+            var output = []
+            for (var i = 0; i < input.length; i++) {
+                output.push(this.rlpEncode(input[i]))
+            }
+            var buf = Buffer.concat(output)
+            return Buffer.concat([encodeLength(buf.length, 192), buf])
+        } else {
+            input = toBuffer(input)
+            if (input.length === 1 && input[0] < 128) {
+                return input
+            } else {
+                return Buffer.concat([encodeLength(input.length, 128), input])
+            }
+        }
+    }
 
     /**
-     * @property {Buffer} from (read only) sender address of this transaction, mathematically derived from other parameters.
-     * @name from
-     * @memberof Transaction
+     * returns chain ID
+     * @return {Buffer}
      */
-    Object.defineProperty(this, 'from', {
-      enumerable: true,
-      configurable: true,
-      get: this.getSenderAddress.bind(this),
-    });
-
-    // calculate chainId from signature
-    const sigV = ethUtil.bufferToInt(this.v);
-    let chainId = Math.floor((sigV - 35) / 2);
-    if (chainId < 0) chainId = 0;
-
-    // set chainId
-    this._chainId = chainId || data.chainId || 0;
-    this._homestead = true;
-  }
-
-  /**
-   * If the tx's `to` is to the creation address
-   * @return {Boolean}
-   */
-  toCreationAddress() {
-    return this.to.toString('hex') === '';
-  }
-
-  /**
-   * Computes a sha3-256 hash of the serialized tx
-   * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
-   * @return {Buffer}
-   */
-  hash(includeSignature) {
-    if (includeSignature === undefined) includeSignature = true;
-
-    // EIP155 spec:
-    // when computing the hash of a transaction for purposes of signing or recovering,
-    // instead of hashing only the first six elements (ie. nonce, gasprice, startgas, to, value, data),
-    // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0
-
-    let items;
-    if (includeSignature) {
-      items = this.raw;
-    } else {
-      // Excludes v, r, s and version.
-      items = this.raw.slice(0, 11);
+    getChainId() {
+        return this._chainId;
     }
 
-    // create hash
-    return ethUtil.rlphash(items);
-  }
-
-  /**
-   * returns chain ID
-   * @return {Buffer}
-   */
-  getChainId() {
-    return this._chainId;
-  }
-
-  /**
-   * returns the sender's address
-   * @return {Buffer}
-   */
-  getSenderAddress() {
-    if (this._from) {
-      return this._from;
-    }
-    const pubkey = this.getSenderPublicKey();
-    this._from = ethUtil.publicToAddress(pubkey);
-    return this._from;
-  }
-
-  /**
-   * returns the public key of the sender
-   * @return {Buffer}
-   */
-  getSenderPublicKey() {
-    if (!this._senderPubKey || !this._senderPubKey.length) {
-      if (!this.verifySignature()) throw new Error('Invalid Signature');
-    }
-    return this._senderPubKey;
-  }
-
-  /**
-   * Determines if the signature is valid
-   * @return {Boolean}
-   */
-  verifySignature() {
-    const msgHash = this.hash(false);
-    // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
-      return false;
+    /**
+     * returns the sender's address
+     * @return {Buffer}
+     */
+    getSenderAddress() {
+        if (this._from) {
+            return this._from;
+        }
+        const pubkey = this.getSenderPublicKey();
+        this._from = ethUtil.publicToAddress(pubkey);
+        return this._from;
     }
 
-    try {
-      let v = ethUtil.bufferToInt(this.v);
-      this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s);
-    } catch (e) {
-      return false;
+    /**
+     * returns the public key of the sender
+     * @return {Buffer}
+     */
+    getSenderPublicKey() {
+        if (!this._senderPubKey || !this._senderPubKey.length) {
+            if (!this.verifySignature()) throw new Error('Invalid Signature');
+        }
+        return this._senderPubKey;
     }
 
-    return !!this._senderPubKey;
-  }
+    /**
+     * Determines if the signature is valid
+     * @return {Boolean}
+     */
+    verifySignature() {
+        const msgHash = this.hash(false);
+        // All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
+        if (this._homestead && new BN(this.s).cmp(N_DIV_2) === 1) {
+            return false;
+        }
 
-  /**
-   * sign a transaction with a given private key
-   * @param {Buffer} privateKey
-   */
-  sign(privateKey) {
-    const msgHash = this.hash(false);
-    const sig = ethUtil.ecsign(msgHash, privateKey);
-    Object.assign(this, sig);
-  }
+        try {
+            let v = ethUtil.bufferToInt(this.v);
+            this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s);
+        } catch (e) {
+            return false;
+        }
 
-  /**
-   * The amount of gas paid for the data in this tx
-   * @return {BN}
-   */
-  getDataFee() {
-    const data = this.raw[5];
-    const cost = new BN(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] === 0
-        ? cost.iaddn(fees.txDataZeroGas.v)
-        : cost.iaddn(fees.txDataNonZeroGas.v);
-    }
-    return cost;
-  }
-
-  /**
-   * the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
-   * @return {BN}
-   */
-  getBaseFee() {
-    const fee = this.getDataFee().iaddn(fees.txGas.v);
-    if (this._homestead && this.toCreationAddress()) {
-      fee.iaddn(fees.txCreation.v);
-    }
-    return fee;
-  }
-
-  /**
-   * the up front amount that an account must have for this transaction to be valid
-   * @return {BN}
-   */
-  getUpfrontCost() {
-    return new BN(this.gasLimit)
-      .imul(new BN(this.gasPrice))
-      .iadd(new BN(this.value));
-  }
-
-  /**
-   * validates the signature and checks to see if it has enough gas
-   * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
-   * @return {Boolean|String}
-   */
-  validate(stringError) {
-    const errors = [];
-    if (!this.verifySignature()) {
-      errors.push('Invalid Signature');
+        return !!this._senderPubKey;
     }
 
-    if (this.getBaseFee().cmp(new BN(this.gasLimit)) > 0) {
-      errors.push([`gas limit is too low. Need at least ${this.getBaseFee()}`]);
+    /**
+     * sign a transaction with a given private key
+     * @param {Buffer} privateKey
+     */
+    sign(privateKey) {
+        const msgHash = this.hash(false);
+        const sig = ethUtil.ecsign(msgHash, privateKey);
+        Object.assign(this, sig);
     }
 
-    if (stringError === undefined || stringError === false) {
-      return errors.length === 0;
+    /**
+     * The amount of gas paid for the data in this tx
+     * @return {BN}
+     */
+    getDataFee() {
+        const data = this.raw[5];
+        const cost = new BN(0);
+        for (let i = 0; i < data.length; i++) {
+            data[i] === 0
+                ? cost.iaddn(fees.txDataZeroGas.v)
+                : cost.iaddn(fees.txDataNonZeroGas.v);
+        }
+        return cost;
     }
-    return errors.join(' ');
-  }
+
+    /**
+     * the minimum amount of gas the tx must have (DataFee + TxFee + Creation Fee)
+     * @return {BN}
+     */
+    getBaseFee() {
+        const fee = this.getDataFee().iaddn(fees.txGas.v);
+        if (this._homestead && this.toCreationAddress()) {
+            fee.iaddn(fees.txCreation.v);
+        }
+        return fee;
+    }
+
+    /**
+     * the up front amount that an account must have for this transaction to be valid
+     * @return {BN}
+     */
+    getUpfrontCost() {
+        return new BN(this.gasLimit)
+            .imul(new BN(this.gasPrice))
+            .iadd(new BN(this.value));
+    }
+
+    /**
+     * validates the signature and checks to see if it has enough gas
+     * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
+     * @return {Boolean|String}
+     */
+    validate(stringError) {
+        const errors = [];
+        if (!this.verifySignature()) {
+            errors.push('Invalid Signature');
+        }
+
+        if (this.getBaseFee().cmp(new BN(this.gasLimit)) > 0) {
+            errors.push([`gas limit is too low. Need at least ${this.getBaseFee()}`]);
+        }
+
+        if (stringError === undefined || stringError === false) {
+            return errors.length === 0;
+        }
+        return errors.join(' ');
+    }
 }
 
 module.exports = Transaction;
