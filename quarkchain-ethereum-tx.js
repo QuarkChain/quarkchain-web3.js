@@ -199,7 +199,7 @@ class Transaction {
     let items;
     if (includeSignature) {
       items = this.raw;
-      return this.txEncode(items);
+      return this.txHash(items);
     } else {
       // Excludes v, r, s and version.
       items = this.raw.slice(0, 11);
@@ -209,7 +209,7 @@ class Transaction {
     return ethUtil.rlphash(items);
   }
 
-    txEncode(a) {
+    txHash(a) {
         var rlpresult = this.rlpEncode(a);
         var len = rlpresult.length;
         var buf = new Buffer(5 + len);
