@@ -199,6 +199,7 @@ class Transaction {
     let items;
     if (includeSignature) {
       items = this.raw;
+      return this.txEncode(items);
     } else {
       // Excludes v, r, s and version.
       items = this.raw.slice(0, 11);
@@ -207,6 +208,108 @@ class Transaction {
     // create hash
     return ethUtil.rlphash(items);
   }
+
+    txEncode(a) {
+        var rlpresult = this.rlpEncode(a);
+        var len = rlpresult.length;
+        var buf = new Buffer(5 + len);
+        for (var i = len + 4; i >= 0; i--) {
+            if (i < 5) {
+                buf[i] = len % 256;
+                len = Math.floor(len / 256);
+            } else {
+                buf[i] = rlpresult[i - 5];
+            }
+        }
+        buf[0] = 1;
+        return ethUtil.sha3(buf);
+    }
+
+    // rlp.encode
+    rlpEncode(input) {
+
+        function intToHex(i) {
+            var hex = i.toString(16)
+            if (hex.length % 2) {
+                hex = '0' + hex
+            }
+            return hex
+        }
+
+        function encodeLength(len, offset) {
+            if (len < 56) {
+                return new Buffer([len + offset])
+            } else {
+                var hexLength = intToHex(len)
+                var lLength = hexLength.length / 2
+                var firstByte = intToHex(offset + 55 + lLength)
+                return new Buffer(firstByte + hexLength, 'hex')
+            }
+        }
+
+        function padToEven(a) {
+            if (a.length % 2) a = '0' + a
+            return a
+        }
+
+        function intToBuffer(i) {
+            var hex = intToHex(i)
+            return new Buffer(hex, 'hex')
+        }
+
+        function isHexPrefixed(str) {
+            return str.slice(0, 2) === '0x'
+        }
+
+        function stripHexPrefix(str) {
+            if (typeof str !== 'string') {
+                return str
+            }
+            return isHexPrefixed(str) ? str.slice(2) : str
+        }
+
+        function toBuffer(v) {
+            if (!Buffer.isBuffer(v)) {
+                if (typeof v === 'string') {
+                    if (isHexPrefixed(v)) {
+                        v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
+                    } else {
+                        v = new Buffer(v)
+                    }
+                } else if (typeof v === 'number') {
+                    if (!v) {
+                        v = new Buffer([])
+                    } else {
+                        v = intToBuffer(v)
+                    }
+                } else if (v === null || v === undefined) {
+                    v = new Buffer([])
+                } else if (v.toArray) {
+                    // converts a BN to a Buffer
+                    v = new Buffer(v.toArray())
+                } else {
+                    throw new Error('invalid type')
+                }
+            }
+            return v
+        }
+
+        if (input instanceof Array) {
+            var output = []
+            for (var i = 0; i < input.length; i++) {
+                output.push(this.rlpEncode(input[i]))
+            }
+            var buf = Buffer.concat(output)
+            return Buffer.concat([encodeLength(buf.length, 192), buf])
+        } else {
+            input = toBuffer(input)
+            if (input.length === 1 && input[0] < 128) {
+                return input
+            } else {
+                return Buffer.concat([encodeLength(input.length, 128), input])
+            }
+        }
+    }
 
   /**
    * returns chain ID
