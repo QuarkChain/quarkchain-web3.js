@@ -2,6 +2,7 @@
 // to add shard-related fields.
 
 const ethUtil = require('ethereumjs-util');
+const rlp = require('rlp');
 const fees = require('ethereum-common/params.json');
 
 const BN = ethUtil.BN;
@@ -55,93 +56,93 @@ class Transaction {
     // Define Properties
     const fields = [
       {
-        name: 'nonce',
+        name: "nonce",
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'gasPrice',
+        name: "gasPrice",
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'gasLimit',
-        alias: 'gas',
+        name: "gasLimit",
+        alias: "gas",
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'to',
+        name: "to",
         allowZero: true,
         length: 20,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'value',
+        name: "value",
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'data',
-        alias: 'input',
+        name: "data",
+        alias: "input",
         allowZero: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'networkId',
+        name: "networkId",
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'fromFullShardKey',
-        length: 4,
+        name: "fromFullShardKey",
+        length: 4
       },
       {
-        name: 'toFullShardKey',
-        length: 4,
+        name: "toFullShardKey",
+        length: 4
       },
       {
-        name: 'gasTokenId',
+        name: "gasTokenId",
         length: 8,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'transferTokenId',
+        name: "transferTokenId",
         length: 8,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'version',
+        name: "version",
         length: 32,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
       {
-        name: 'v',
+        name: "v",
         allowZero: true,
-        default: new Buffer([0x1c]),
+        default: new Buffer([0x1c])
       },
       {
-        name: 'r',
-        length: 32,
-        allowZero: true,
-        allowLess: true,
-        default: new Buffer([]),
-      },
-      {
-        name: 's',
+        name: "r",
         length: 32,
         allowZero: true,
         allowLess: true,
-        default: new Buffer([]),
+        default: new Buffer([])
       },
+      {
+        name: "s",
+        length: 32,
+        allowZero: true,
+        allowLess: true,
+        default: new Buffer([])
+      }
     ];
 
     /**
@@ -159,10 +160,10 @@ class Transaction {
      * @name from
      * @memberof Transaction
      */
-    Object.defineProperty(this, 'from', {
+    Object.defineProperty(this, "from", {
       enumerable: true,
       configurable: true,
-      get: this.getSenderAddress.bind(this),
+      get: this.getSenderAddress.bind(this)
     });
 
     // calculate chainId from signature
@@ -180,21 +181,16 @@ class Transaction {
    * @return {Boolean}
    */
   toCreationAddress() {
-    return this.to.toString('hex') === '';
+    return this.to.toString("hex") === "";
   }
 
   /**
    * Computes a sha3-256 hash of the serialized tx
-   * @param {Boolean} [includeSignature=true] whether or not to inculde the signature
+   * @param {Boolean} [includeSignature=true] whether or not to include the signature
    * @return {Buffer}
    */
   hash(includeSignature) {
     if (includeSignature === undefined) includeSignature = true;
-
-    // EIP155 spec:
-    // when computing the hash of a transaction for purposes of signing or recovering,
-    // instead of hashing only the first six elements (ie. nonce, gasprice, startgas, to, value, data),
-    // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0
 
     let items;
     if (includeSignature) {
@@ -205,112 +201,30 @@ class Transaction {
       items = this.raw.slice(0, 11);
     }
 
-    // create hash
     return ethUtil.rlphash(items);
   }
 
-    txHash(a) {
-        var rlpresult = this.rlpEncode(a);
-        var len = rlpresult.length;
-        var buf = new Buffer(5 + len);
-        for (var i = len + 4; i >= 0; i--) {
-            if (i < 5) {
-                buf[i] = len % 256;
-                len = Math.floor(len / 256);
-            } else {
-                buf[i] = rlpresult[i - 5];
-            }
-        }
-        buf[0] = 1;
-        return ethUtil.keccak(buf);
+  qkcHash() {
+    // Require signatures are present.
+    for (const sig of [this.r, this.s]) {
+      if (sig.toString() === "") {
+        throw new Error("cannot call qkcHash on unsigned tx");
+      }
     }
-
-    // rlp.encode
-    rlpEncode(input) {
-
-        function intToHex(i) {
-            var hex = i.toString(16)
-            if (hex.length % 2) {
-                hex = '0' + hex
-            }
-            return hex
-        }
-
-        function encodeLength(len, offset) {
-            if (len < 56) {
-                return new Buffer([len + offset])
-            } else {
-                var hexLength = intToHex(len)
-                var lLength = hexLength.length / 2
-                var firstByte = intToHex(offset + 55 + lLength)
-                return new Buffer(firstByte + hexLength, 'hex')
-            }
-        }
-
-        function padToEven(a) {
-            if (a.length % 2) a = '0' + a
-            return a
-        }
-
-        function intToBuffer(i) {
-            var hex = intToHex(i)
-            return new Buffer(hex, 'hex')
-        }
-
-        function isHexPrefixed(str) {
-            return str.slice(0, 2) === '0x'
-        }
-
-        function stripHexPrefix(str) {
-            if (typeof str !== 'string') {
-                return str
-            }
-            return isHexPrefixed(str) ? str.slice(2) : str
-        }
-
-        function toBuffer(v) {
-            if (!Buffer.isBuffer(v)) {
-                if (typeof v === 'string') {
-                    if (isHexPrefixed(v)) {
-                        v = new Buffer(padToEven(stripHexPrefix(v)), 'hex')
-                    } else {
-                        v = new Buffer(v)
-                    }
-                } else if (typeof v === 'number') {
-                    if (!v) {
-                        v = new Buffer([])
-                    } else {
-                        v = intToBuffer(v)
-                    }
-                } else if (v === null || v === undefined) {
-                    v = new Buffer([])
-                } else if (v.toArray) {
-                    // converts a BN to a Buffer
-                    v = new Buffer(v.toArray())
-                } else {
-                    throw new Error('invalid type')
-                }
-            }
-            return v
-        }
-
-        if (input instanceof Array) {
-            var output = []
-            for (var i = 0; i < input.length; i++) {
-                output.push(this.rlpEncode(input[i]))
-            }
-            var buf = Buffer.concat(output)
-            return Buffer.concat([encodeLength(buf.length, 192), buf])
-        } else {
-            input = toBuffer(input)
-            if (input.length === 1 && input[0] < 128) {
-                return input
-            } else {
-                return Buffer.concat([encodeLength(input.length, 128), input])
-            }
-        }
+    const rlpResult = rlp.encode(this.raw);
+    let len = rlpResult.length;
+    const buf = new Buffer(5 + len);
+    for (let i = len + 4; i >= 0; i--) {
+      if (i < 5) {
+        buf[i] = len % 256;
+        len = Math.floor(len / 256);
+      } else {
+        buf[i] = rlpResult[i - 5];
+      }
     }
-
+    buf[0] = 0;
+    return ethUtil.keccak(buf);
+  }
   /**
    * returns chain ID
    * @return {Buffer}
@@ -338,7 +252,7 @@ class Transaction {
    */
   getSenderPublicKey() {
     if (!this._senderPubKey || !this._senderPubKey.length) {
-      if (!this.verifySignature()) throw new Error('Invalid Signature');
+      if (!this.verifySignature()) throw new Error("Invalid Signature");
     }
     return this._senderPubKey;
   }
@@ -419,7 +333,7 @@ class Transaction {
   validate(stringError) {
     const errors = [];
     if (!this.verifySignature()) {
-      errors.push('Invalid Signature');
+      errors.push("Invalid Signature");
     }
 
     if (this.getBaseFee().cmp(new BN(this.gasLimit)) > 0) {
@@ -429,7 +343,7 @@ class Transaction {
     if (stringError === undefined || stringError === false) {
       return errors.length === 0;
     }
-    return errors.join(' ');
+    return errors.join(" ");
   }
 }
 
