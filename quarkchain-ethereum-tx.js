@@ -222,7 +222,7 @@ class Transaction {
             }
         }
         buf[0] = 1;
-        return ethUtil.sha3(buf);
+        return ethUtil.keccak(buf);
     }
 
     // rlp.encode
