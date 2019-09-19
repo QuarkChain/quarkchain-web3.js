@@ -31,11 +31,14 @@ const N_DIV_2 = new BN(
  * var tx = new Transaction(rawTx);
  *
  * @class
- * @param {Buffer | Array | Object} data a transaction can be initiailized with either a buffer containing the RLP serialized transaction or an array of buffers relating to each of the tx Properties, listed in order below in the exmple.
+ * @param {Buffer | Array | Object} data a transaction can be initiailized with either a buffer
+ *   containing the RLP serialized transaction or an array of buffers relating to each of the
+ *   tx Properties, listed in order below in the exmple.
  *
  * Or lastly an Object containing the Properties of the transaction like in the Usage example.
  *
- * For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String , Number, or an object with a toBuffer method such as Bignum
+ * For Object and Arrays each of the elements can either be a Buffer, a hex-prefixed (0x) String,
+ *   Number, or an object with a toBuffer method such as Bignum
  *
  * @property {Buffer} raw The raw rlp encoded transaction
  * @param {Buffer} data.nonce nonce number
@@ -56,93 +59,93 @@ class Transaction {
     // Define Properties
     const fields = [
       {
-        name: "nonce",
+        name: 'nonce',
         length: 32,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "gasPrice",
+        name: 'gasPrice',
         length: 32,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "gasLimit",
-        alias: "gas",
+        name: 'gasLimit',
+        alias: 'gas',
         length: 32,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "to",
+        name: 'to',
         allowZero: true,
         length: 20,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "value",
+        name: 'value',
         length: 32,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "data",
-        alias: "input",
+        name: 'data',
+        alias: 'input',
         allowZero: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "networkId",
+        name: 'networkId',
         length: 32,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "fromFullShardKey",
-        length: 4
+        name: 'fromFullShardKey',
+        length: 4,
       },
       {
-        name: "toFullShardKey",
-        length: 4
+        name: 'toFullShardKey',
+        length: 4,
       },
       {
-        name: "gasTokenId",
+        name: 'gasTokenId',
         length: 8,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "transferTokenId",
+        name: 'transferTokenId',
         length: 8,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "version",
+        name: 'version',
         length: 32,
         allowLess: true,
-        default: new Buffer([])
+        default: new Buffer([]),
       },
       {
-        name: "v",
+        name: 'v',
         allowZero: true,
-        default: new Buffer([0x1c])
+        default: new Buffer([0x1c]),
       },
       {
-        name: "r",
-        length: 32,
-        allowZero: true,
-        allowLess: true,
-        default: new Buffer([])
-      },
-      {
-        name: "s",
+        name: 'r',
         length: 32,
         allowZero: true,
         allowLess: true,
-        default: new Buffer([])
-      }
+        default: new Buffer([]),
+      },
+      {
+        name: 's',
+        length: 32,
+        allowZero: true,
+        allowLess: true,
+        default: new Buffer([]),
+      },
     ];
 
     /**
@@ -156,14 +159,15 @@ class Transaction {
     ethUtil.defineProperties(this, fields, data);
 
     /**
-     * @property {Buffer} from (read only) sender address of this transaction, mathematically derived from other parameters.
+     * @property {Buffer} from (read only) sender address of this transaction, mathematically
+     *   derived from other parameters.
      * @name from
      * @memberof Transaction
      */
-    Object.defineProperty(this, "from", {
+    Object.defineProperty(this, 'from', {
       enumerable: true,
       configurable: true,
-      get: this.getSenderAddress.bind(this)
+      get: this.getSenderAddress.bind(this),
     });
 
     // calculate chainId from signature
@@ -181,7 +185,7 @@ class Transaction {
    * @return {Boolean}
    */
   toCreationAddress() {
-    return this.to.toString("hex") === "";
+    return this.to.toString('hex') === '';
   }
 
   /**
@@ -190,16 +194,18 @@ class Transaction {
    * @return {Buffer}
    */
   hash(includeSignature) {
-    if (includeSignature === undefined) includeSignature = true;
+    if (includeSignature === undefined) {
+      includeSignature = true;
+    }
 
     let items;
     if (includeSignature) {
       items = this.raw;
       return this.txHash(items);
-    } else {
-      // Excludes v, r, s and version.
-      items = this.raw.slice(0, 11);
     }
+    // Excludes v, r, s and version.
+    items = this.raw.slice(0, 11);
+
 
     return ethUtil.rlphash(items);
   }
@@ -207,8 +213,8 @@ class Transaction {
   qkcHash() {
     // Require signatures are present.
     for (const sig of [this.r, this.s]) {
-      if (sig.toString() === "") {
-        throw new Error("cannot call qkcHash on unsigned tx");
+      if (sig.toString() === '') {
+        throw new Error('cannot call qkcHash on unsigned tx');
       }
     }
     const rlpResult = rlp.encode(this.raw);
@@ -225,6 +231,7 @@ class Transaction {
     buf[0] = 0;
     return ethUtil.keccak(buf);
   }
+
   /**
    * returns chain ID
    * @return {Buffer}
@@ -252,7 +259,7 @@ class Transaction {
    */
   getSenderPublicKey() {
     if (!this._senderPubKey || !this._senderPubKey.length) {
-      if (!this.verifySignature()) throw new Error("Invalid Signature");
+      if (!this.verifySignature()) throw new Error('Invalid Signature');
     }
     return this._senderPubKey;
   }
@@ -269,7 +276,7 @@ class Transaction {
     }
 
     try {
-      let v = ethUtil.bufferToInt(this.v);
+      const v = ethUtil.bufferToInt(this.v);
       this._senderPubKey = ethUtil.ecrecover(msgHash, v, this.r, this.s);
     } catch (e) {
       return false;
@@ -327,13 +334,14 @@ class Transaction {
 
   /**
    * validates the signature and checks to see if it has enough gas
-   * @param {Boolean} [stringError=false] whether to return a string with a description of why the validation failed or return a Boolean
+   * @param {Boolean} [stringError=false] whether to return a string with a description of why the
+   *   validation failed or return a Boolean
    * @return {Boolean|String}
    */
   validate(stringError) {
     const errors = [];
     if (!this.verifySignature()) {
-      errors.push("Invalid Signature");
+      errors.push('Invalid Signature');
     }
 
     if (this.getBaseFee().cmp(new BN(this.gasLimit)) > 0) {
@@ -343,7 +351,7 @@ class Transaction {
     if (stringError === undefined || stringError === false) {
       return errors.length === 0;
     }
-    return errors.join(" ");
+    return errors.join(' ');
   }
 }
 

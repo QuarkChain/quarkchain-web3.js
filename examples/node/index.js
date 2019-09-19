@@ -15,16 +15,13 @@ console.log('eth address', web3.qkc.address);
 
 const tx = {
   gas: `0x${(30000).toString(16)}`,
-  // Minimum gas price: 10gwei
-  gasPrice: '0x2540be400',
+  gasPrice: '0x0',
   data: '0x',
   to: '0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf0005Fc90',
   value: '0x0',
   networkId: devnetNetworkId,
   fromFullShardKey: fullShardKey,
   toFullShardKey: fullShardKey,
-  transferTokenId: '0x8bb0',
-  gasTokenId: '0x8bb0',
 };
 
 // Should be able to find tx ID in console.

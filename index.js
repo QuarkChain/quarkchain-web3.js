@@ -23,7 +23,7 @@
 // Example:
 //     QuarkChain.injectWeb3(web3, "http://jrpc.quarkchain.io:38391");
 //     const ethAddr = web3.eth.accounts[0];
-//     const qkcAddr = QuarkChain.getQkcAddressFromEthAddress(ethAddr);
+//     const qkcAddr = ethAddr + "00000001";  // Default to chain 0.
 //     web3.qkc.getBalance(qkcAddr).toString(10);
 //
 // Also for now this package needs `Web3` global variable from MetaMask, which means it can
@@ -40,30 +40,20 @@ if (typeof window === 'undefined') {
   Web3 = window.Web3; // eslint-disable-line
 }
 
+const defaultTokenSetting = {
+  transferTokenId: '0x8bb0',
+  gasTokenId: '0x8bb0',
+};
+
 function assert(condition, msg) {
   if (!condition) {
     throw msg;
   }
 }
 
-function getFullShardIdFromEthAddress(ethAddress) {
-  assert(ethAddress.length === 42, 'Invalid eth address');
-  let fullShardId = '';
-  for (let i = 2; i < 42; i += 10) {
-    fullShardId += ethAddress.slice(i, i + 2);
-  }
-  return `0x${fullShardId}`;
-}
-
-function getFullShardIdFromQkcAddress(qkcAddress) {
+function getFullShardKeyFromQkcAddress(qkcAddress) {
   assert(qkcAddress.length === 50, 'Invalid qkc address');
   return `0x${qkcAddress.slice(-8)}`;
-}
-
-function getQkcAddressFromEthAddress(ethAddress) {
-  assert(ethAddress.length === 42, 'Invalid eth address');
-  const fullShardId = getFullShardIdFromEthAddress(ethAddress);
-  return `${ethAddress}${fullShardId.slice(2)}`;
 }
 
 function getEthAddressFromQkcAddress(qkcAddress) {
@@ -194,11 +184,7 @@ function loadContract(abi, contractAddress, web3in, web3http) {
 }
 
 export default {
-  getFullShardIdFromEthAddress,
-
-  getFullShardIdFromQkcAddress,
-
-  getQkcAddressFromEthAddress,
+  getFullShardKeyFromQkcAddress,
 
   getEthAddressFromQkcAddress,
 
@@ -218,13 +204,13 @@ export default {
       value: {
         getBalance(qkcAddress, callback) {
           const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
-          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          const shard = getFullShardKeyFromQkcAddress(qkcAddress);
           return web3http.eth.getBalance(ethAddress, shard, callback);
         },
 
         getTransactionCount(qkcAddress, callback) {
           const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
-          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          const shard = getFullShardKeyFromQkcAddress(qkcAddress);
           return web3http.eth.getTransactionCount(ethAddress, shard, callback);
         },
 
@@ -233,7 +219,7 @@ export default {
           const rawTx = Object.assign({}, obj, {
             to: getEthAddressFromQkcAddress(qkcAddress),
           });
-          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          const shard = getFullShardKeyFromQkcAddress(qkcAddress);
           return web3http.eth.call(rawTx, shard, callback);
         },
 
@@ -258,12 +244,19 @@ export default {
             fromEthAddress = web3in.eth.accounts[0];
           }
           if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
-            throw new Error("`fromFullShardKey` and `toFullShardKey` are required");
+            throw new Error('`fromFullShardKey` and `toFullShardKey` are required');
           }
 
-          const rawTx = Object.assign({}, obj);
+          const rawTx = Object.assign({}, defaultTokenSetting, obj);
           if (obj.to !== undefined) {
-            rawTx.to = getEthAddressFromQkcAddress(obj.to);
+            if (obj.to.length == 42) {
+              rawTx.to = obj.to;
+            } else {
+              rawTx.to = getEthAddressFromQkcAddress(obj.to);
+              if (getFullShardKeyFromQkcAddress(obj.to) !== obj.toFullShardKey) {
+                throw new Error('Target shard key mismatch');
+              }
+            }
           }
 
           // FIXME: make this async
@@ -299,7 +292,7 @@ export default {
 
         getCode(qkcAddress, callback) {
           const ethAddress = getEthAddressFromQkcAddress(qkcAddress);
-          const shard = getFullShardIdFromQkcAddress(qkcAddress);
+          const shard = getFullShardKeyFromQkcAddress(qkcAddress);
           return web3http.eth.getCode(ethAddress, shard, callback);
         },
 

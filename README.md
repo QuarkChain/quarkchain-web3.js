@@ -8,8 +8,8 @@ Instead of modifying the the web3 source code the quarkchain-web3.js library pro
 
 1. The addresses in QuarkChain are 24 bytes (48 hex chars)
 2. The transaction object in QuarkChain optionally can have three extra properties than in Ethereum
-   - `fromFullShardId`: 4 bytes fixed
-   - `toFullShardId`: 4 bytes fixed
+   - `fromFullShardKey`: 4 bytes fixed
+   - `toFullShardKey`: 4 bytes fixed
    - `networkId`: 4 bytes or less
 
 The web3 instance passed into the injection function should manage user accounts and will be used to get account address (```web3.eth.accounts[0]```) and sign transactions (```eth_signTypedData```). The Ethereum provider of the web3 instance must support [eth_signTypedData](https://github.com/ethereum/EIPs/pull/712) which is implemented by [MetaMask](https://metamask.io). Follow this [doc](https://github.com/MetaMask/faq/blob/master/detecting_metamask.md) to integrate MetaMask.
@@ -55,10 +55,8 @@ web3.qkc.setPrivateKey(PRIVATE_KEY);
 ## API Reference
 
 - QuarkChain
-  - [getFullShardIdFromEthAddress](#quarkchaingetfullshardidfromethaddress)
-  - [getFullShardIdFromQkcAddress](#quarkchaingetfullshardidfromqkcaddress)
+  - [getFullShardKeyFromQkcAddress](#quarkchaingetfullshardkeyfromqkcaddress)
   - [getEthAddressFromQkcAddress](#quarkchaingetethaddressfromqkcaddress)
-  - [getQkcAddressFromEthAddress](#quarkchaingetqkcaddressfromethaddress)
   - [injectWeb3](#quarkchaininjectweb3)
 - web3
   - [qkc](#web3qkc)
@@ -71,36 +69,13 @@ web3.qkc.setPrivateKey(PRIVATE_KEY);
     - [contract methods](#contract-methods)
     - [setPrivateKey](#web3qkcsetprivatekey)
 
-#### QuarkChain.getFullShardIdFromEthAddress
+#### QuarkChain.getFullShardKeyFromQkcAddress
 
 ```js
-QuarkChain.getFullShardIdFromEthAddress(ethAddressHexString)
+QuarkChain.getFullShardKeyFromQkcAddress(qkcAddressHexString)
 ```
 
-Calculates the full shard id from ETH address.
-
-##### Parameters
-
-1. `String` - ETH address as HEX string.
-
-##### Returns
-
-`String` - Full shard id as HEX string.
-
-##### Example
-
-```js
-var result = QuarkChain.getFullShardIdFromEthAddress("0x653EF52aa0D9f9186f3f311193C92Ed84707519C");
-console.log(result);  // "0x65D931d8"
-```
-
-#### QuarkChain.getFullShardIdFromQkcAddress
-
-```js
-QuarkChain.getFullShardIdFromQkcAddress(qkcAddressHexString)
-```
-
-Extracts full shard id from QKC address.
+Extracts full shard key from QKC address.
 
 ##### Parameters
 
@@ -108,12 +83,12 @@ Extracts full shard id from QKC address.
 
 ##### Returns
 
-`String` - Full shard id as HEX string.
+`String` - Full shard key as HEX string.
 
 ##### Example
 
 ```js
-var result = QuarkChain.getFullShardIdFromQkcAddress("0x653EF52aa0D9f9186f3f311193C92Ed84707519C65D931d8");
+var result = QuarkChain.getFullShardKeyFromQkcAddress("0x653EF52aa0D9f9186f3f311193C92Ed84707519C65D931d8");
 console.log(result);  // "0x65D931d8"
 ```
 
@@ -138,29 +113,6 @@ Extracts ETH address from QKC address.
 ```js
 var result = QuarkChain.getEthAddressFromQkcAddress("0x653EF52aa0D9f9186f3f311193C92Ed84707519C65D931d8");
 console.log(result);  // "0x653EF52aa0D9f9186f3f311193C92Ed84707519C"
-```
-
-#### QuarkChain.getQkcAddressFromEthAddress
-
-```js
-QuarkChain.getQkcAddressFromEthAddress(ethAddressHexString)
-```
-
-Converts ETH address to QKC address deterministically.
-
-##### Parameters
-
-1. `String` - ETH address as HEX string.
-
-##### Returns
-
-`String` - QKC address as HEX string.
-
-##### Example
-
-```js
-var result = QuarkChain.getQkcAddressFromEthAddress("0x653EF52aa0D9f9186f3f311193C92Ed84707519C");
-console.log(result);  // "0x653EF52aa0D9f9186f3f311193C92Ed84707519C65D931d8"
 ```
 
 #### QuarkChain.injectWeb3
@@ -271,8 +223,8 @@ Sends a transaction to the network.
 - `gas`: `Number|String|BigNumber` - (optional, default: 0) The amount of gas to use for the transaction (unused gas is refunded).
 - `gasPrice`: `Number|String|BigNumber` - (optional, default: 0) The price of gas for this transaction in wei.
 - `data`: `String` - (optional) Either a [byte string](https://github.com/ethereum/wiki/wiki/Solidity,-Docs-and-ABI) containing the associated data of the message, or in the case of a contract-creation transaction, the initialisation code.
-- `fromFullShardId`: `String` - (optional, default: `QuarkChain.getFullShardIdFromEthAddress(web3.eth.accounts[0])`) The full shard id for sender.
-- `toFullShardId`: `String` - (optional, default: `QuarkChain.getFullShardIdFromQkcAddress(to)`) The full shard id for the to address.
+- `fromFullShardKey`: `String` - The full shard key for sender.
+- `toFullShardKey`: `String` - The full shard key for the to address.
 
 1. `Function` - (optional) If you pass a callback the HTTP request is made asynchronous.
    See [this note](https://github.com/ethereum/wiki/wiki/JavaScript-API#using-callbacks) for details.
@@ -322,8 +274,8 @@ Returns the receipt of a transaction by transaction id.
 - `transactionIndex`: `Number` - integer of the transactions index position in the block.
 - `cumulativeGasUsed `: `Number ` - The total amount of gas used when this transaction was executed in the block.
 - `gasUsed `: `Number ` -  The amount of gas used by this specific transaction alone.
-- `contractAddress `: `String` - 20 Bytes - The contract address created **without full shard id**, if the transaction was a contract creation, otherwise `null`.
-    To build a QKC contract address, append the toFullShardId used in the contract creation transaction.
+- `contractAddress `: `String` - 20 Bytes - The contract address created **without full shard key**, if the transaction was a contract creation, otherwise `null`.
+    To build a QKC contract address, append the toFullShardKey used in the contract creation transaction.
     Normally you should use web3.qkc.contract(abi).new() which returns the QKC address in the callback.
 - `status `:  `String` - '0x0' indicates transaction failure , '0x1' indicates transaction succeeded.
 
