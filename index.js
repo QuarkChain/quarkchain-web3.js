@@ -249,7 +249,14 @@ export default {
 
           const rawTx = Object.assign({}, defaultTokenSetting, obj);
           if (obj.to !== undefined) {
-            rawTx.to = getEthAddressFromQkcAddress(obj.to);
+            if (obj.to.length == 42) {
+              rawTx.to = obj.to;
+            } else {
+              rawTx.to = getEthAddressFromQkcAddress(obj.to);
+              if (getFullShardKeyFromQkcAddress(obj.to) !== obj.toFullShardKey) {
+                throw new Error('Target shard key mismatch');
+              }
+            }
           }
 
           // FIXME: make this async

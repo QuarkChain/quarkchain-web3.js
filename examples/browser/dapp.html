@@ -12,7 +12,7 @@
   <form id="sendTxForm">
     <br> To:
     <br>
-    <input type="text" name="to" value="0x000000000000000000000000000000000000000000000000">
+    <input type="text" name="to" value="0x000000000000000000000000000000000000000000000001">
     <br> Value (wei):
     <br>
     <input type="text" name="value" value="0">
@@ -36,33 +36,27 @@
 
   async function sendTx() {
 
-    const ethAddr = web3.eth.accounts[0];
-    const qkcAddr = QuarkChain.getQkcAddressFromEthAddress(ethAddr);
-
     const mainnetNetworkId = "0x1";
     const devnetNetworkId = "0xff";
 
     const formEle = document.getElementById("sendTxForm");
     const rawTx = {
       gas: `0x${(30000).toString(16)}`,
-      // Minimum gas price: 10gwei
-      gasPrice: "0x2540be400",
+      gasPrice: "0x0",
       data: "0x",
       // Will be updated according to the form
       to: "",
       value: "",
       networkId: devnetNetworkId,
-      fromFullShardKey: "0x00050001",
-      toFullShardKey: "0x00050001",
-      transferTokenId: "0x8bb0",
-      gasTokenId: "0x8bb0",
+      fromFullShardKey: "0x00000001",
+      toFullShardKey: "0x00000001",
     };
     for (let i = 0; i < formEle.length; i += 1) {
       const element = formEle.elements[i];
       switch (element.name) {
         case "to":
-          if (element.value.length !== 50) {
-            throw new Error("Invalid QKC address");
+          if (element.value.length !== 50 && element.value.length !== 42) {
+            throw new Error("Invalid address");
           }
           rawTx.to = element.value;
           break;
