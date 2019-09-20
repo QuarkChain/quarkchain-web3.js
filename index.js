@@ -246,11 +246,15 @@ export default {
           if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
             if (obj.fromFullShardId&&obj.fromFullShardId.length>0){
               obj.fromFullShardKey=obj.fromFullShardId
-            }else if (obj.toFullShardId&&obj.toFullShardId.length>0){
+            }else {
+              throw new Error("`fromFullShardId` are required");
+            }
+
+            if (obj.toFullShardId&&obj.toFullShardId.length>0){
               obj.toFullShardKey=obj.toFullShardId
 
-            }else {
-              throw new Error("`fromFullShardId` and `toFullShardId` are required");
+            } else {
+              throw new Error(" `toFullShardId` are required");
             }
           }
 
