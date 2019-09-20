@@ -244,7 +244,14 @@ export default {
             fromEthAddress = web3in.eth.accounts[0];
           }
           if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
-            throw new Error('`fromFullShardKey` and `toFullShardKey` are required');
+            if (obj.fromFullShardId&&obj.fromFullShardId.length>0){
+              obj.fromFullShardKey=obj.fromFullShardId
+            }else if (obj.toFullShardId&&obj.toFullShardId.length>0){
+              obj.toFullShardKey=obj.toFullShardId
+
+            }else {
+              throw new Error("`fromFullShardId` and `toFullShardId` are required");
+            }
           }
 
           const rawTx = Object.assign({}, defaultTokenSetting, obj);
@@ -273,6 +280,9 @@ export default {
           //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
           //    '0x1' typed encoding matching MetaMask initial implementation of EIP-712
           rawTx.version = '0x1';
+          rawTx.gasTokenId="0x8bb0";
+          rawTx.transferTokenId="0x8bb0";
+
 
           const tx = new Transaction(rawTx);
 
@@ -325,5 +335,8 @@ export default {
     web3in.eth.sendTransaction = web3in.qkc.sendTransaction.bind(web3in.qkc); // eslint-disable-line
     web3in.eth.getTransactionReceipt = web3in.qkc.getTransactionReceipt; // eslint-disable-line
     web3in.eth.getCode = web3in.qkc.getCode; // eslint-disable-line
+
   },
+
+
 };
