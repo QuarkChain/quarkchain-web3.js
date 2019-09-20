@@ -245,6 +245,7 @@ export default {
           }
           if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
             throw new Error('`fromFullShardKey` and `toFullShardKey` are required');
+
           }
 
           const rawTx = Object.assign({}, defaultTokenSetting, obj);
