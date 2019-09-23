@@ -274,7 +274,6 @@ export default {
           //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
           //    '0x1' typed encoding matching MetaMask initial implementation of EIP-712
           rawTx.version = '0x1';
-          rawTx.gasTokenId="0x8bb0";
           rawTx.transferTokenId="0x8bb0";
 
 
