@@ -39,7 +39,7 @@ if (typeof window === 'undefined') {
 } else {
   Web3 = window.Web3; // eslint-disable-line
 }
-
+//
 const defaultTokenSetting = {
   transferTokenId: '0x8bb0',
   gasTokenId: '0x8bb0',
@@ -247,7 +247,7 @@ export default {
             throw new Error('`fromFullShardKey` and `toFullShardKey` are required');
 
           }
-
+          //
           const rawTx = Object.assign({}, defaultTokenSetting, obj);
           if (obj.to !== undefined) {
             if (obj.to.length == 42) {
@@ -274,7 +274,6 @@ export default {
           //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
           //    '0x1' typed encoding matching MetaMask initial implementation of EIP-712
           rawTx.version = '0x1';
-          rawTx.transferTokenId="0x8bb0";
 
 
           const tx = new Transaction(rawTx);
