@@ -352,7 +352,7 @@ var MyContract = web3.qkc.contract(abiArray);
 var contractInstance = MyContract.at(address);
 
 // deploy new contract
-var contractInstance = MyContract.new([constructorParam1] [, constructorParam2], {data: '0x12345...', from: myAccount, gas: 1000000,gasPrice:1000000000,fromFullShardKey:fromFullShardKey,toFullShardKey:toFullShardKey});
+var contractInstance = MyContract.new([constructorParam1] [, constructorParam2], {data: '0x12345...', from: myAccount, gas: 1000000,gasPrice: 1000000000,fromFullShardKey: fromFullShardKey, toFullShardKey: toFullShardKey});
 
 // Get the data to deploy the contract manually
 var contractData = MyContract.new.getData([constructorParam1] [, constructorParam2], {data: '0x12345...'});

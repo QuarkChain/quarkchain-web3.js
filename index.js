@@ -39,7 +39,7 @@ if (typeof window === 'undefined') {
 } else {
   Web3 = window.Web3; // eslint-disable-line
 }
-//
+
 const defaultTokenSetting = {
   transferTokenId: '0x8bb0',
   gasTokenId: '0x8bb0',
@@ -245,9 +245,8 @@ export default {
           }
           if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
             throw new Error('`fromFullShardKey` and `toFullShardKey` are required');
-
           }
-          //
+
           const rawTx = Object.assign({}, defaultTokenSetting, obj);
           if (obj.to !== undefined) {
             if (obj.to.length == 42) {
@@ -274,7 +273,6 @@ export default {
           //    '0x0' RLP-encoded transaction of all fields in Transaction (minus version, v, r, s)
           //    '0x1' typed encoding matching MetaMask initial implementation of EIP-712
           rawTx.version = '0x1';
-
 
           const tx = new Transaction(rawTx);
 
@@ -327,8 +325,5 @@ export default {
     web3in.eth.sendTransaction = web3in.qkc.sendTransaction.bind(web3in.qkc); // eslint-disable-line
     web3in.eth.getTransactionReceipt = web3in.qkc.getTransactionReceipt; // eslint-disable-line
     web3in.eth.getCode = web3in.qkc.getCode; // eslint-disable-line
-
   },
-
-
 };
