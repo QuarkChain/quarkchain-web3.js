@@ -260,7 +260,7 @@ export default {
           }
 
           // FIXME: make this async
-          if (!rawTx.nonce) {
+          if (rawTx.nonce == undefined) {
             rawTx.nonce = web3http.eth.getTransactionCount(
               fromEthAddress,
               rawTx.fromFullShardKey,
