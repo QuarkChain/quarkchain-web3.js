@@ -111,12 +111,12 @@ function getTypedTx(tx) {
     {
       type: 'uint64',
       name: 'gasTokenId',
-      value: `0x${tx.gasTokenId.toString('hex')}`
+      value: `0x${tx.gasTokenId.toString('hex')}`,
     },
     {
       type: 'uint64',
       name: 'transferTokenId',
-      value: `0x${tx.transferTokenId.toString('hex')}`
+      value: `0x${tx.transferTokenId.toString('hex')}`,
     },
 
     {
@@ -249,7 +249,7 @@ export default {
 
           const rawTx = Object.assign({}, defaultTokenSetting, obj);
           if (obj.to !== undefined) {
-            if (obj.to.length == 42) {
+            if (obj.to.length === 42) {
               rawTx.to = obj.to;
             } else {
               rawTx.to = getEthAddressFromQkcAddress(obj.to);
@@ -260,10 +260,12 @@ export default {
           }
 
           // FIXME: make this async
-          rawTx.nonce = web3http.eth.getTransactionCount(
-            fromEthAddress,
-            rawTx.fromFullShardKey,
-          );
+          if (rawTx.nonce == undefined) {
+            rawTx.nonce = web3http.eth.getTransactionCount(
+              fromEthAddress,
+              rawTx.fromFullShardKey,
+            );
+          }
           if (!rawTx.networkId) {
             // default network is devnet
             rawTx.networkId = '0xff';
