@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "qq-web3": "^2.2.2",
     "quarkchain-web3": "^2.1.0"
   },
   "devDependencies": {
