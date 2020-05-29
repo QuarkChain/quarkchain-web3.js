@@ -37,8 +37,20 @@ let Web3;
 if (typeof window === 'undefined') {
   Web3 = require("web3"); // eslint-disable-line
 } else {
-  Web3 = window.Web3; // eslint-disable-line
+  if (!window.Web3) {
+    Web3 = require('web3')
+  }else {
+    if (window.Web3.version && !window.Web3.version.api) {
+      // window.Web3 version 1.x
+      Web3 = require('web3');
+    }else {
+      // window.Web3 version 0.20.x
+      Web3 = window.Web3;
+    }
+  }
 }
+
+const Web3HttpProvider = require('./lib/web3-http-provider')
 
 const defaultTokenSetting = {
   transferTokenId: '0x8bb0',
@@ -198,7 +210,15 @@ export default {
     // Args:
     //     web3in: web3 instance
     //     jrpcUrl: QuarkChain JSON RPC endpoint (e.g., http://localhost:38391)
-    const web3http = new Web3(new Web3.providers.HttpProvider(jrpcUrl));
+    const web3http = new Web3(new Web3HttpProvider(jrpcUrl));
+
+    let tmpWeb3in;
+    if (web3in.version && !web3in.version.api) {
+      // web3in version 1.x
+      tmpWeb3in = new Web3(web3in.currentProvider);
+    } else {
+      tmpWeb3in = web3in;
+    }
 
     Object.defineProperty(web3in, 'qkc', {
       value: {
@@ -241,7 +261,7 @@ export default {
           if (this.address) {
             fromEthAddress = this.address;
           } else {
-            fromEthAddress = web3in.eth.accounts[0];
+            fromEthAddress = tmpWeb3in.eth.accounts[0];
           }
           if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
             throw new Error('`fromFullShardKey` and `toFullShardKey` are required');
@@ -283,7 +303,7 @@ export default {
             tx.version = '0x0';
             tx.sign(ethUtil.toBuffer(this.key));
           } else {
-            const sig = await metaMaskSignTyped(web3in, tx);
+            const sig = await metaMaskSignTyped(tmpWeb3in, tx);
             Object.assign(tx, decodeSignature(sig));
           }
           const payload = `0x${tx.serialize().toString('hex')}`;
@@ -299,8 +319,8 @@ export default {
         },
 
         contract(abi) {
-          const contractFactory = web3in.eth.contract(abi);
-          const originalFactory = web3in.eth.contract(abi);
+          const contractFactory = tmpWeb3in.eth.contract(abi);
+          const originalFactory = tmpWeb3in.eth.contract(abi);
           contractFactory.at = addr => loadContract(abi, addr, web3in, web3http);
           contractFactory.new = (...args) => {
             const size = args.length;

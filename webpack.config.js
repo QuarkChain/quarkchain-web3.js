@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -20,5 +21,13 @@ module.exports = {
       },
     ],
   },
-  plugins: [new webpack.IgnorePlugin(/web3/)],
+  plugins: [
+      new webpack.IgnorePlugin(/xmlhttprequest/),
+      new CopyWebpackPlugin([
+        {
+          from: 'lib/**',
+          to: './'
+        }
+      ])
+  ],
 };

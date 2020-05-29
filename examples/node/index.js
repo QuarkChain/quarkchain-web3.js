@@ -1,5 +1,5 @@
-import QuarkChain from 'quarkchain-web3';
-import Web3 from 'web3';
+const QuarkChain = require('quarkchain-web3');
+const Web3 = require('web3');
 
 const web3 = new Web3();
 QuarkChain.injectWeb3(web3, 'http://jrpc.devnet.quarkchain.io:38391');

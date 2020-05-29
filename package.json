@@ -1,6 +1,6 @@
 {
   "name": "quarkchain-web3",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "QuarkChain wrapper over Ethereum web3",
   "main": "dist/index.js",
   "files": [
@@ -35,6 +35,7 @@
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-0": "^6.24.1",
+    "copy-webpack-plugin": "4.5.3",
     "eslint": "^5.2.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.13.0",
