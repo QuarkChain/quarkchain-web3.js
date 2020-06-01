@@ -34,23 +34,21 @@ import ethUtil from 'ethereumjs-util';
 import Transaction from './quarkchain-ethereum-tx';
 
 let Web3;
+/* eslint-disable */
 if (typeof window === 'undefined') {
-  Web3 = require("web3"); // eslint-disable-line
+  Web3 = require('web3');
+} else if (!window.Web3) {
+  Web3 = require('web3');
+} else if (window.Web3.version && !window.Web3.version.api) {
+  // window.Web3 version 1.x
+  Web3 = require('web3');
 } else {
-  if (!window.Web3) {
-    Web3 = require('web3')
-  }else {
-    if (window.Web3.version && !window.Web3.version.api) {
-      // window.Web3 version 1.x
-      Web3 = require('web3');
-    }else {
-      // window.Web3 version 0.20.x
-      Web3 = window.Web3;
-    }
-  }
+  // window.Web3 version 0.20.x
+  Web3 = window.Web3;
 }
+/* eslint-enable */
 
-const Web3HttpProvider = require('./lib/web3-http-provider')
+const Web3HttpProvider = require('./lib/web3-http-provider');
 
 const defaultTokenSetting = {
   transferTokenId: '0x8bb0',
@@ -280,7 +278,7 @@ export default {
           }
 
           // FIXME: make this async
-          if (rawTx.nonce == undefined) {
+          if (rawTx.nonce == undefined) { // eslint-disable-line
             rawTx.nonce = web3http.eth.getTransactionCount(
               fromEthAddress,
               rawTx.fromFullShardKey,
