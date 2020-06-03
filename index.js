@@ -34,11 +34,16 @@ import ethUtil from 'ethereumjs-util';
 import Transaction from './quarkchain-ethereum-tx';
 
 let Web3;
-if (typeof window === 'undefined') {
-  Web3 = require("web3"); // eslint-disable-line
+/* eslint-disable */
+if (typeof window === 'undefined' || !window.Web3 || (window.Web3.version && !window.Web3.version.api)) {
+  // no Web3 or window.Web3 version 1.x
+  Web3 = require('web3');
 } else {
-  Web3 = window.Web3; // eslint-disable-line
+  // window.Web3 version 0.20.x
+  Web3 = window.Web3;
 }
+/* eslint-enable */
+
 
 const defaultTokenSetting = {
   transferTokenId: '0x8bb0',
@@ -128,9 +133,8 @@ function getTypedTx(tx) {
   return msgParams;
 }
 
-async function metaMaskSignTyped(web3in, tx) {
+async function metaMaskSignTyped(from, web3in, tx) {
   return new Promise((resolve, reject) => {
-    const from = web3in.eth.accounts[0];
     const params = [getTypedTx(tx), from];
     const method = 'eth_signTypedData';
     web3in.currentProvider.sendAsync(
@@ -200,6 +204,14 @@ export default {
     //     jrpcUrl: QuarkChain JSON RPC endpoint (e.g., http://localhost:38391)
     const web3http = new Web3(new Web3.providers.HttpProvider(jrpcUrl));
 
+    let web3eth;
+    if (web3in.version && !web3in.version.api) {
+      // web3in version 1.x
+      web3eth = (new Web3(web3in.currentProvider)).eth;
+    } else {
+      web3eth = web3in.eth;
+    }
+
     Object.defineProperty(web3in, 'qkc', {
       value: {
         getBalance(qkcAddress, callback) {
@@ -241,7 +253,7 @@ export default {
           if (this.address) {
             fromEthAddress = this.address;
           } else {
-            fromEthAddress = web3in.eth.accounts[0];
+            fromEthAddress = web3eth.accounts[0];
           }
           if (obj.fromFullShardKey === undefined || obj.toFullShardKey === undefined) {
             throw new Error('`fromFullShardKey` and `toFullShardKey` are required');
@@ -260,7 +272,7 @@ export default {
           }
 
           // FIXME: make this async
-          if (rawTx.nonce == undefined) {
+          if (rawTx.nonce == undefined) { // eslint-disable-line
             rawTx.nonce = web3http.eth.getTransactionCount(
               fromEthAddress,
               rawTx.fromFullShardKey,
@@ -283,7 +295,8 @@ export default {
             tx.version = '0x0';
             tx.sign(ethUtil.toBuffer(this.key));
           } else {
-            const sig = await metaMaskSignTyped(web3in, tx);
+            const from = web3eth.accounts[0];
+            const sig = await metaMaskSignTyped(from, web3in, tx);
             Object.assign(tx, decodeSignature(sig));
           }
           const payload = `0x${tx.serialize().toString('hex')}`;
@@ -299,8 +312,8 @@ export default {
         },
 
         contract(abi) {
-          const contractFactory = web3in.eth.contract(abi);
-          const originalFactory = web3in.eth.contract(abi);
+          const contractFactory = web3eth.contract(abi);
+          const originalFactory = web3eth.contract(abi);
           contractFactory.at = addr => loadContract(abi, addr, web3in, web3http);
           contractFactory.new = (...args) => {
             const size = args.length;

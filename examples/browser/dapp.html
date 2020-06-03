@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>QuarkChain DApp Example</title>
-  <script src="https://cdn.jsdelivr.net/npm/quarkchain-web3@2.0.0/dist/quarkchain-web3.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quarkchain-web3@2.1.0/dist/quarkchain-web3.js"></script>
 </head>
 
 <body>
@@ -22,17 +22,18 @@
 </body>
 
 <script type="text/javascript">
-  (function () {
 
-    if (typeof web3 === 'undefined') {
-      const msg = "Couldn't detect web3. Make sure MetaMask is installed.";
-      alert(msg);
-      console.error(msg);
-      return;
-    }
-
-    QuarkChain.injectWeb3(web3, "http://jrpc.devnet.quarkchain.io:38391");
-  })();
+  window.onload = function() {
+    (function () {
+      if (typeof web3 === 'undefined') {
+        const msg = "Couldn't detect web3. Make sure MetaMask or QPocket is installed.";
+        alert(msg);
+        console.error(msg);
+        return;
+      }
+      (!web3.qkc) && QuarkChain.injectWeb3(web3, "http://jrpc.devnet.quarkchain.io:38391");
+    })();
+  }
 
   async function sendTx() {
 

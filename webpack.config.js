@@ -20,5 +20,7 @@ module.exports = {
       },
     ],
   },
-  plugins: [new webpack.IgnorePlugin(/web3/)],
+  plugins: [
+    new webpack.IgnorePlugin(/xmlhttprequest/),
+  ],
 };
