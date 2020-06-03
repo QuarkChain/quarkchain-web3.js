@@ -36,7 +36,7 @@ import Transaction from './quarkchain-ethereum-tx';
 let Web3;
 /* eslint-disable */
 if (typeof window === 'undefined' || !window.Web3 || (window.Web3.version && !window.Web3.version.api)) {
-  //no Web3 or window.Web3 version 1.x
+  // no Web3 or window.Web3 version 1.x
   Web3 = require('web3');
 } else {
   // window.Web3 version 0.20.x
