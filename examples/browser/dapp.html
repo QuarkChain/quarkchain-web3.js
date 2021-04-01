@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <title>QuarkChain DApp Example</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@0.20.7/dist/web3.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/quarkchain-web3@3.0.1/dist/quarkchain-web3.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quarkchain-web3@3.0.2/dist/quarkchain-web3.js"></script>
 </head>
 
 <body>
@@ -33,6 +33,7 @@
         return;
       }
       await window.ethereum.enable();
+      web3.eth = (new Web3(web3.currentProvider)).eth;
       (!web3.qkc) && QuarkChain.injectWeb3(web3, "http://jrpc.devnet.quarkchain.io:38391");
     })();
   }

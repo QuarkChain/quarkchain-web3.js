@@ -193,7 +193,7 @@ export default {
     //     web3in: web3 instance
     //     jrpcUrl: QuarkChain JSON RPC endpoint (e.g., http://localhost:38391)
     const web3http = new Web3(new Web3.providers.HttpProvider(jrpcUrl));
-    const web3eth = (new Web3(web3in.currentProvider)).eth;
+    const web3eth = web3in.eth || (new Web3(web3in.currentProvider)).eth;
 
     Object.defineProperty(web3in, 'qkc', {
       value: {
@@ -318,5 +318,10 @@ export default {
         },
       },
     });
+
+      // Override to support `contract.new`
+      web3in.eth.sendTransaction = web3in.qkc.sendTransaction.bind(web3in.qkc); // eslint-disable-line
+      web3in.eth.getTransactionReceipt = web3in.qkc.getTransactionReceipt; // eslint-disable-line
+      web3in.eth.getCode = web3in.qkc.getCode; // eslint-disable-line
   },
 };
