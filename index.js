@@ -318,10 +318,5 @@ export default {
         },
       },
     });
-
-    // Override to support `contract.new`
-    web3in.eth.sendTransaction = web3in.qkc.sendTransaction.bind(web3in.qkc); // eslint-disable-line
-    web3in.eth.getTransactionReceipt = web3in.qkc.getTransactionReceipt; // eslint-disable-line
-    web3in.eth.getCode = web3in.qkc.getCode; // eslint-disable-line
   },
 };
