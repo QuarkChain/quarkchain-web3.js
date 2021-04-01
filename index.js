@@ -33,17 +33,7 @@ import ethUtil from 'ethereumjs-util';
 
 import Transaction from './quarkchain-ethereum-tx';
 
-let Web3;
-/* eslint-disable */
-if (typeof window === 'undefined' || !window.Web3 || (window.Web3.version && !window.Web3.version.api)) {
-  // no Web3 or window.Web3 version 1.x
-  Web3 = require('web3');
-} else {
-  // window.Web3 version 0.20.x
-  Web3 = window.Web3;
-}
 /* eslint-enable */
-
 
 const defaultTokenSetting = {
   transferTokenId: '0x8bb0',
@@ -203,14 +193,7 @@ export default {
     //     web3in: web3 instance
     //     jrpcUrl: QuarkChain JSON RPC endpoint (e.g., http://localhost:38391)
     const web3http = new Web3(new Web3.providers.HttpProvider(jrpcUrl));
-
-    let web3eth;
-    if (web3in.version && !web3in.version.api) {
-      // web3in version 1.x
-      web3eth = (new Web3(web3in.currentProvider)).eth;
-    } else {
-      web3eth = web3in.eth;
-    }
+    const web3eth = (new Web3(web3in.currentProvider)).eth;
 
     Object.defineProperty(web3in, 'qkc', {
       value: {
