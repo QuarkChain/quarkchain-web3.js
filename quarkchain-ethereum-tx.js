@@ -331,6 +331,15 @@ class Transaction {
       .imul(new BN(this.gasPrice))
       .iadd(new BN(this.value));
   }
+  
+  getSenderAddress() {
+    if (this._from) {
+      return this._from;
+    }
+    const pubkey = this.getSenderPublicKey();
+    this._from = ethUtil.publicToAddress(pubkey);
+    return this._from;
+  }
 
   /**
    * validates the signature and checks to see if it has enough gas
